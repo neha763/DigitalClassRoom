@@ -19,6 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/auth")
@@ -40,12 +42,14 @@ public class AuthController {
     }
 
     @PostMapping(path = "/login", consumes="application/json")
-    public ResponseEntity<String> login(@Valid @RequestBody RequestDto requestDto){
+    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody RequestDto requestDto){
 
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                 new UsernamePasswordAuthenticationToken(requestDto.getUsername(), requestDto.getPassword());
 
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+
+        Map<String, String> response = new HashMap<>();
 
         if(authentication.isAuthenticated()){
 
@@ -63,13 +67,22 @@ public class AuthController {
 
                 user.setLastLogin(LocalDateTime.now());
                 userServiceI.updateUser(user);
+
+                response.put("id", user.getUserId().toString());
+            }
+            if(role.equals("ROLE_ADMIN")){
+                response.put("role", "ADMIN");
             }
 
             String token = jwtService.generateToken(username, role);
 
-            return new ResponseEntity<String>(token, HttpStatus.OK);
-        }else
-            return new ResponseEntity<String>("Invalid Credentials", HttpStatus.UNAUTHORIZED);
+            response.put("token", token);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }else {
+            response.put("message", "Invalid credentials");
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @PostMapping(path = "/logout")
