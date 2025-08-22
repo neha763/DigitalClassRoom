@@ -61,5 +61,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     public Collection<SimpleGrantedAuthority> getAuthorities(User user){
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
     }
+//    @Override
+//    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+//        User u = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+//        // Map your Role to a GrantedAuthority (prefix ROLE_)
+//        String authority = "ROLE_" + u.getRole().name();
+//        return org.springframework.security.core.userdetails.User
+//                .withUsername(u.getEmail())
+//                .password(u.getPassword())
+//                .authorities(authority)
+//                .build();
 
 }
