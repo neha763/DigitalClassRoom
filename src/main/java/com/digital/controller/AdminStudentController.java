@@ -1,0 +1,40 @@
+package com.digital.controller;
+
+import com.digital.dto.StudentRequest;
+import com.digital.dto.StudentResponse;
+import com.digital.entity.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/admin/students")
+@RequiredArgsConstructor
+public class AdminStudentController {
+
+    private final com.digital.service.StudentService studentService;
+
+   @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
+    public ResponseEntity<StudentResponse> createStudent(@RequestBody StudentRequest request) {
+        User user = new User(); // In real flow, create user with role=STUDENT
+        user.setUserId(1L); // example
+        return ResponseEntity.ok(studentService.createStudent(user, request));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<StudentResponse> updateStudent(@PathVariable Long id,
+                                                         @RequestBody StudentRequest request) {
+        return ResponseEntity.ok(studentService.updateStudent(id, request));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<List<StudentResponse>> getAllStudents() {
+        return ResponseEntity.ok(studentService.getAllStudents());
+    }
+}
