@@ -1,6 +1,10 @@
 package com.digital.dto;
 
+import com.digital.entity.Student;
 import lombok.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -10,24 +14,54 @@ import lombok.*;
 public class StudentResponse {
 
     private Long studentRegId;
-    private Long userId;
     private String rollNumber;
-    private String fullName;
+    private String firstName;
+    private String middleName;
+    private String lastName;
     private String email;
     private String mobileNumber;
-    private String className;
-    private String sectionName;
+    private LocalDate dateOfBirth;
+    private String gender;
 
-    public static StudentResponse fromEntity(com.digital.entity.Student student) {
+    // Address
+    private String street;
+    private String city;
+    private String state;
+    private String country;
+    private String pinCode;
+
+    // Class & Section
+    private Long classId;
+    private Long sectionId;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    // username from User entity (optional but useful)
+    private String username;
+
+    // Factory method to map from entity
+    public static StudentResponse fromEntity(Student student) {
         return StudentResponse.builder()
                 .studentRegId(student.getStudentRegId())
-                .userId(student.getUser().getUserId())
                 .rollNumber(student.getRollNumber())
-                .fullName(student.getFirstName() + " " + student.getLastName())
+                .firstName(student.getFirstName())
+                .middleName(student.getMiddleName())
+                .lastName(student.getLastName())
                 .email(student.getEmail())
                 .mobileNumber(student.getMobileNumber())
-                .className("Class-" + student.getClassId())     // TODO: replace with Class entity name
-                .sectionName("Section-" + student.getSectionId()) // TODO: replace with Section entity name
+                .dateOfBirth(student.getDateOfBirth())
+                .gender(student.getGender())
+                .street(student.getStreet())
+                .city(student.getCity())
+                .state(student.getState())
+                .country(student.getCountry())
+                .pinCode(student.getPinCode())
+                .classId(student.getClassId())
+                .sectionId(student.getSectionId())
+                .createdAt(student.getCreatedAt())
+                .updatedAt(student.getUpdatedAt())
+                .username(student.getUser() != null ? student.getUser().getUsername() : null)
                 .build();
     }
 }

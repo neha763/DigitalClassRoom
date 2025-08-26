@@ -15,4 +15,6 @@ public interface StudentService {
     StudentResponse getStudentProfile(Long userId);
     StudentResponse updateStudentProfile(Long userId, StudentRequest request);
     DashboardResponse getDashboard(Long userId);
+    String deleteStudent(Long studentId);
+
 }

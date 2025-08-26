@@ -39,4 +39,10 @@ public class AdminStudentController {
     public ResponseEntity<List<StudentResponse>> getAllStudents() {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteStudent(@PathVariable Long id) {
+        String response = studentService.deleteStudent(id);
+        return ResponseEntity.ok(response);
+    }
 }

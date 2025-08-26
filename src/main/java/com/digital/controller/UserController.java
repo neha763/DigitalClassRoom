@@ -61,4 +61,5 @@ public class UserController {
         String response = userServiceI.manageUserStatus(userId, manageStatusDto);
         return ResponseEntity.ok(response);
     }
+
 }

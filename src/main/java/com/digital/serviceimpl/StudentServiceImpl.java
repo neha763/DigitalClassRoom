@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -123,15 +124,43 @@ public class StudentServiceImpl implements StudentService {
                 .build();
     }
 
+    @Override
+    public String deleteStudent(Long studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
+
+        User user = student.getUser();
+        studentRepository.delete(student);
+        if (user != null) {
+            userRepository.delete(user);
+        }
+
+        return "Student deleted successfully with id: " + studentId;
+    }
+
     private StudentResponse mapToResponse(Student student) {
         return StudentResponse.builder()
                 .studentRegId(student.getStudentRegId())
                 .rollNumber(student.getRollNumber())
-                .fullName(student.getFirstName() + " " + student.getLastName())
+                .firstName(Optional.ofNullable(student.getFirstName()).orElse(""))
+                .middleName(Optional.ofNullable(student.getMiddleName()).orElse(""))
+                .lastName(Optional.ofNullable(student.getLastName()).orElse(""))
                 .email(student.getEmail())
                 .mobileNumber(student.getMobileNumber())
-                .className("Class-" + student.getClassId()) // later map properly
-                .sectionName("Section-" + student.getSectionId())
+                .dateOfBirth(student.getDateOfBirth())
+                .gender(student.getGender())
+                .street(student.getStreet())
+                .city(student.getCity())
+                .state(student.getState())
+                .country(student.getCountry())
+                .pinCode(student.getPinCode())
+                .classId(student.getClassId())
+                .sectionId(student.getSectionId())
+                .createdAt(student.getCreatedAt())
+                .updatedAt(student.getUpdatedAt())
+                .username(student.getUser() != null ? student.getUser().getUsername() : null)
                 .build();
     }
+
+
 }
