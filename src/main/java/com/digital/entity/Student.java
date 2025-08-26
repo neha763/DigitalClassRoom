@@ -17,12 +17,14 @@ import java.time.LocalDateTime;
 public class Student {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studentRegId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
+
 
 
     @Column(nullable = false, unique = true)

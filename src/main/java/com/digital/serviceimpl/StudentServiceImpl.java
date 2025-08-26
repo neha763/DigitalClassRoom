@@ -5,10 +5,15 @@ import com.digital.dto.StudentResponse;
 import com.digital.dto.DashboardResponse;
 import com.digital.entity.Student;
 import com.digital.entity.User;
+import com.digital.enums.Role;
+import com.digital.enums.Status;
 import com.digital.repository.StudentRepository;
+import com.digital.repository.UserRepository;
+import com.digital.servicei.StudentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.digital.service.StudentService;   // ✅ make sure this import exists
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,29 +23,48 @@ import java.util.stream.Collectors;
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder; // <-- injected here
+
+
 
     @Override
-    public StudentResponse createStudent(User user, StudentRequest request) {
-        Student student = Student.builder()
-                .user(user)
-                .rollNumber(request.getRollNumber())
-                .firstName(request.getFirstName())
-                .middleName(request.getMiddleName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .mobileNumber(request.getMobileNumber())
-                .dateOfBirth(request.getDateOfBirth())
-                .gender(request.getGender())
-                .street(request.getStreet())
-                .city(request.getCity())
-                .state(request.getState())
-                .country(request.getCountry())
-                .pinCode(request.getPinCode())
-                .classId(request.getClassId())
-                .sectionId(request.getSectionId())
-                .build();
+    public StudentResponse createStudent(StudentRequest request) {
+        try {
+            // ✅ Create User for Student
+            User user = User.builder()
+                    .username(request.getEmail())  // ✅ use email as username
+                    .email(request.getEmail())
+                    .password(passwordEncoder.encode("Default@123")) // default password
+                    .role(Role.STUDENT) // assign student role
+                    .build();
 
-        return mapToResponse(studentRepository.save(student));
+            // ✅ Create Student
+            Student student = Student.builder()
+                    .user(user) // cascade will persist user
+                    .rollNumber(request.getRollNumber())
+                    .firstName(request.getFirstName())
+                    .middleName(request.getMiddleName())
+                    .lastName(request.getLastName())
+                    .email(request.getEmail())
+                    .mobileNumber(request.getMobileNumber())
+                    .dateOfBirth(request.getDateOfBirth())
+                    .gender(request.getGender())
+                    .street(request.getStreet())
+                    .city(request.getCity())
+                    .state(request.getState())
+                    .country(request.getCountry())
+                    .pinCode(request.getPinCode())
+                    .classId(request.getClassId())
+                    .sectionId(request.getSectionId())
+                    .build();
+
+            Student saved = studentRepository.save(student);
+            return StudentResponse.fromEntity(saved);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create student: " + e.getMessage(), e);
+        }
     }
 
     @Override

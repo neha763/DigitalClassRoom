@@ -3,6 +3,7 @@ package com.digital.controller;
 import com.digital.dto.StudentRequest;
 import com.digital.dto.StudentResponse;
 import com.digital.entity.User;
+import com.digital.servicei.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,14 +17,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminStudentController {
 
-    private final com.digital.service.StudentService studentService;
+    private final StudentService studentService;
 
    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<StudentResponse> createStudent(@RequestBody StudentRequest request) {
         User user = new User(); // In real flow, create user with role=STUDENT
         user.setUserId(1L); // example
-        return ResponseEntity.ok(studentService.createStudent(user, request));
+        return ResponseEntity.ok(studentService.createStudent(request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

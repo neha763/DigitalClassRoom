@@ -1,4 +1,4 @@
-package com.digital.service;
+package com.digital.servicei;
 
 import com.digital.dto.StudentRequest;
 import com.digital.dto.StudentResponse;
@@ -8,7 +8,8 @@ import com.digital.entity.User;
 import java.util.List;
 
 public interface StudentService {
-    StudentResponse createStudent(User user, StudentRequest request);
+    StudentResponse createStudent(StudentRequest request);
+
     StudentResponse updateStudent(Long studentId, StudentRequest request);
     List<StudentResponse> getAllStudents();
     StudentResponse getStudentProfile(Long userId);
