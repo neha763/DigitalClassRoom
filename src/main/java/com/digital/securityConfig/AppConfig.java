@@ -59,6 +59,19 @@ public class AppConfig {
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/user/otp", "/api/user/password").permitAll()
                         .requestMatchers("/api/user/create", "/api/user/status/*").hasRole("ADMIN")
+
+//class and section
+                           .requestMatchers("/admin/**").hasRole("ADMIN")
+                           .requestMatchers("/admin/classes/**").hasRole("ADMIN")
+                           .requestMatchers("/admin/classes/**/sections").hasRole("ADMIN")
+
+                           .requestMatchers("/admin/classes").hasRole("ADMIN")
+                           //.requestMatchers("/admin/classes/{id}").hasRole("ADMIN")
+                           .requestMatchers("/admin/classes/*").hasRole("ADMIN")
+
+                        .requestMatchers("/api/**").authenticated())
+
+=======
                         .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
                         .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
                         .requestMatchers("/admin/students/*").hasRole("ADMIN")
@@ -66,6 +79,7 @@ public class AppConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated()
                 )
+
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint()) // 401
                         .accessDeniedHandler(accessDeniedHandler())           // 403
