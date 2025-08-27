@@ -19,10 +19,9 @@ import java.io.IOException;
 @Component
 public class AppFilter extends OncePerRequestFilter {
 
-    private final Logger logger = LoggerFactory.getLogger(AppFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AppFilter.class);
 
     private final CustomUserDetailsService userDetailsService;
-
     private final JwtService jwtService;
 
     public AppFilter(CustomUserDetailsService userDetailsService, JwtService jwtService) {
@@ -31,36 +30,54 @@ public class AppFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
         try {
+            String header = request.getHeader("Authorization");
+            String token = null;
             String username = null;
-            String bearerToken = null;
 
-            String header = request.getHeader("Authorization"); // Authorization is the key that we passed inside header
-
-            if (header != null && header.startsWith("Bearer")) {
-                bearerToken = header.substring(7);
-                username = jwtService.extractUsername(bearerToken);
+            if (header != null && header.startsWith("Bearer ")) {
+                token = header.substring(7);
+                username = jwtService.extractUsername(token);
             }
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                logger.debug(userDetails.getUsername());
 
-                if (jwtService.validateToken(bearerToken, userDetails)) {
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                if (jwtService.validateToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities());
+
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    logger.info("✅ User '{}' authenticated with roles: {}",
+                            userDetails.getUsername(),
+                            userDetails.getAuthorities());
+                } else {
+                    logger.warn("❌ Invalid JWT token for user {}", username);
+                    throw new CustomUnauthorizedException("Invalid or expired JWT token");
                 }
             }
-            filterChain.doFilter(request, response); // doFilter means proceed further
-        }catch (CustomUnauthorizedException e) {
-            // Let @ControllerAdvice handle it
-            throw e;
+
+            filterChain.doFilter(request, response);
+
+        } catch (CustomUnauthorizedException e) {
+            // Explicit 401 (handled by your @ControllerAdvice or entrypoint)
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
-            // For any other unexpected errors
-            throw new RuntimeException("Error in JWT authentication: " + e.getMessage(), e);
+            logger.error("Unexpected error in JWT authentication", e);
+            // Fail-safe: 500 instead of wrongly sending 403
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Authentication filter error: " + e.getMessage() + "\"}");
         }
     }
 }
-

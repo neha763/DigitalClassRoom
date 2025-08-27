@@ -7,6 +7,7 @@ import com.digital.exception.ResourceNotFoundException;
 import com.digital.repository.AdminRepository;
 import com.digital.repository.UserRepository;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -61,5 +63,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     public Collection<SimpleGrantedAuthority> getAuthorities(User user){
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
     }
+    /// /////////
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.userRepository));
+    }
+
 
 }
