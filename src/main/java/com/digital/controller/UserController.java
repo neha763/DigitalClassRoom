@@ -12,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/api/user")
+@RequestMapping("/api/user")
 public class UserController {
 
     private final UserServiceI userServiceI;
@@ -21,26 +21,45 @@ public class UserController {
         this.userServiceI = userServiceI;
     }
 
+    /**
+     * Create new user (ADMIN only).
+     */
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value="/create")
-    public ResponseEntity<String> createNewUser(@Valid @RequestBody User user){
-        return new ResponseEntity<String>(userServiceI.add(user), HttpStatus.CREATED);
+    @PostMapping("/create")
+    public ResponseEntity<String> createNewUser(@Valid @RequestBody User user) {
+        String response = userServiceI.add(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping(value="/otp")
-    public ResponseEntity<String> forgotPassword(@Valid @RequestBody EmailDto emailDto){
-        return new ResponseEntity<String>(userServiceI.sendOtp(emailDto), HttpStatus.OK);
+    /**
+     * Forgot password → send OTP to email.
+     */
+    @PostMapping("/otp")
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody EmailDto emailDto) {
+        String response = userServiceI.sendOtp(emailDto);
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping(value = "/password")
-    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordDto resetPasswordDto){
-        return new ResponseEntity<String>(userServiceI.resetPassword(resetPasswordDto), HttpStatus.OK);
+    /**
+     * Reset password with OTP.
+     */
+    @PutMapping("/password")
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordDto resetPasswordDto) {
+        String response = userServiceI.resetPassword(resetPasswordDto);
+        return ResponseEntity.ok(response);
     }
 
+    /**
+     * Update user status (ADMIN only).
+     */
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(value = "/status/{userId}")
-    public ResponseEntity<String> manageUserStatus(@PathVariable Long userId, @Valid @RequestBody ManagerStatusDto manageStatusDto){
-        return new ResponseEntity<String>(userServiceI.manageUserStatus(userId, manageStatusDto), HttpStatus.OK);
+    @PutMapping("/status/{userId}")
+    public ResponseEntity<String> manageUserStatus(
+            @PathVariable Long userId,
+            @Valid @RequestBody ManagerStatusDto manageStatusDto
+    ) {
+        String response = userServiceI.manageUserStatus(userId, manageStatusDto);
+        return ResponseEntity.ok(response);
     }
 
 }
