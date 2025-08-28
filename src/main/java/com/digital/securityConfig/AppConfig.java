@@ -62,6 +62,14 @@ public class AppConfig {
 
                         .requestMatchers("/api/user/otp", "/api/user/password").permitAll()
                         .requestMatchers("/api/user/create", "/api/user/status/*").hasRole("ADMIN")
+
+
+                        .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
+                        .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
+                           .requestMatchers("/api/teacher/**").hasRole("ADMIN")
+//                           .requestMatchers("/api/teacher/**").permitAll()
+                           .requestMatchers("/api/**").authenticated())
+
 //class and section
                            .requestMatchers("/admin/**").hasRole("ADMIN")
                            .requestMatchers("/admin/classes/**").hasRole("ADMIN")
@@ -71,7 +79,7 @@ public class AppConfig {
                            //.requestMatchers("/admin/classes/{id}").hasRole("ADMIN")
                            .requestMatchers("/admin/classes/*").hasRole("ADMIN")
 
-                        .requestMatchers("/api/**").authenticated())
+
 
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint())

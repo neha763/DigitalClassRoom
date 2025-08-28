@@ -1,17 +1,14 @@
 package com.digital.repository;
 
-import com.digital.entity.User;
+import com.digital.entity.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-
-    Optional<User> findByUsername(String username);
-
-    Optional<User> findByEmail(String email);
-
+public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     boolean existsByEmail(String email);
+
+    Optional<Teacher> findByEmail(String email); // <-- Add this
 }
