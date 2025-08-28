@@ -2,6 +2,7 @@ package com.digital.entity;
 
 import com.digital.enums.Role;
 import com.digital.enums.Status;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;

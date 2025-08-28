@@ -21,7 +21,7 @@ public class NotificationController {
     }
 
     @PreAuthorize("hasRole('TEACHER')")
-    @GetMapping("/me")
+    @GetMapping("/id")
     public ResponseEntity<List<NotificationDto>> getMyNotifications() {
         return ResponseEntity.ok(notificationService.getMyNotifications());
     }
@@ -33,5 +33,12 @@ public class NotificationController {
         notificationService.sendNotification(teacherId, message);
         return ResponseEntity.ok().build();
     }
+    @PreAuthorize("hasRole('TEACHER')")
+    @PutMapping("/{id}/read")
+    public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
+        notificationService.markAsRead(id);
+        return ResponseEntity.ok().build();
+    }
+
 }
 

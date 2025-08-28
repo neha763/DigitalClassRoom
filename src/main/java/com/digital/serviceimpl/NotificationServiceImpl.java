@@ -8,9 +8,11 @@ import com.digital.repository.TeacherRepository;
 import com.digital.servicei.NotificationService;
 import lombok.RequiredArgsConstructor;
 //import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,4 +63,14 @@ public class NotificationServiceImpl implements NotificationService {
 
        messagingTemplate.convertAndSend("/topic/teacher-" + teacherId, message);
     }
-}
+    @Override
+    public void markAsRead(Long id) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Notification not found"));
+        if (!"READ".equalsIgnoreCase(notification.getStatus())) {
+            notification.setStatus("READ");
+            notificationRepository.save(notification);
+        }
+
+    }}

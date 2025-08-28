@@ -65,8 +65,9 @@ public class AppConfig {
 
                         .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
                         .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
-                           .requestMatchers("/api/teacher").hasRole("ADMIN")
-                        .requestMatchers("/api/**").authenticated())
+                           .requestMatchers("/api/teacher/**").hasRole("ADMIN")
+//                           .requestMatchers("/api/teacher/**").permitAll()
+                           .requestMatchers("/api/**").authenticated())
 
 
                 .exceptionHandling(ex -> ex

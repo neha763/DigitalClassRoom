@@ -1,20 +1,19 @@
 package com.digital.dto;
 
+import lombok.Builder;
+import lombok.Data;
 
-import lombok.*;
-
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
 public class TeacherDto {
+    private Long id;
     private String firstName;
     private String lastName;
-    private Long id;
-    private String fullName;
-    private String subject;
-    private String phone;
     private String email;
-    private String Qualification;
+    private String phone;
+    private String qualification;
+    private Integer experienceYears;
+    private String gender;
+    private String assignedClasses;
+    private String dateOfBirth;
 }

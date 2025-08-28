@@ -1,8 +1,7 @@
 package com.digital.controller;
 
-import com.digital.dto.CreateTeacherRequest;
 import com.digital.dto.TeacherDto;
-import com.digital.dto.UpdateTeacherRequest;
+import com.digital.entity.Teacher;
 import com.digital.servicei.TeacherService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,38 +12,40 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/teacher")
 public class TeacherController {
-
     private final TeacherService teacherService;
 
     public TeacherController(TeacherService teacherService) {
         this.teacherService = teacherService;
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')") // usually only admin can create teachers
-    public ResponseEntity<TeacherDto> createTeacher(@RequestBody CreateTeacherRequest request) {
-        return ResponseEntity.ok(teacherService.createTeacher(request));
+    public ResponseEntity<TeacherDto> createTeacher(@RequestBody Teacher teacher) {
+        return ResponseEntity.ok(teacherService.createTeacher(teacher));
     }
 
-
-    @PreAuthorize("hasRole('TEACHER')")
-    @GetMapping("/me")
-    public ResponseEntity<TeacherDto> getMyProfile() {
-        return ResponseEntity.ok(teacherService.getMyProfile());
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<TeacherDto> getTeacherById(@PathVariable Long id) {
+        return ResponseEntity.ok(teacherService.getTeacherById(id));
     }
-
-
-    @PreAuthorize("hasRole('TEACHER')")
-    @PutMapping("/me")
-    public ResponseEntity<TeacherDto> updateMyProfile(@RequestBody UpdateTeacherRequest request) {
-        return ResponseEntity.ok(teacherService.updateMyProfile(request));
-    }
-
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<TeacherDto>> getAllTeachers() {
         return ResponseEntity.ok(teacherService.getAllTeachers());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<TeacherDto> updateTeacher(@PathVariable Long id, @RequestBody Teacher teacher) {
+        return ResponseEntity.ok(teacherService.updateTeacher(id, teacher));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTeacher(@PathVariable Long id) {
+        teacherService.deleteTeacher(id);
+        return ResponseEntity.noContent().build();
     }
 }
