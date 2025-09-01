@@ -3,6 +3,7 @@ package com.digital.serviceimpl;
 import com.digital.dto.TeacherDto;
 import com.digital.entity.Teacher;
 import com.digital.repository.TeacherRepository;
+import com.digital.repository.UserRepository;
 import com.digital.servicei.TeacherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,8 @@ import java.util.stream.Collectors;
 public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository teacherRepository;
+
+    private final UserRepository userRepository;
 
     private TeacherDto mapToDto(Teacher teacher) {
         return TeacherDto.builder()
@@ -32,8 +35,7 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public TeacherDto createTeacher(Teacher teacher) {
-        return mapToDto(teacherRepository.save(teacher));
+    public TeacherDto createTeacher(Teacher teacher) {return mapToDto(teacherRepository.save(teacher));
     }
 
     @Override

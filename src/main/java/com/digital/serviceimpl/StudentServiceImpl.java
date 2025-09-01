@@ -5,13 +5,11 @@ import com.digital.dto.StudentResponse;
 import com.digital.dto.DashboardResponse;
 import com.digital.entity.Student;
 import com.digital.entity.User;
-import com.digital.enums.Role;
-import com.digital.enums.Status;
+import com.digital.exception.ResourceNotFoundException;
 import com.digital.repository.StudentRepository;
 import com.digital.repository.UserRepository;
 import com.digital.servicei.StudentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,12 +31,14 @@ public class StudentServiceImpl implements StudentService {
     public StudentResponse createStudent(StudentRequest request) {
         try {
             // ✅ Create User for Student
-            User user = User.builder()
-                    .username(request.getEmail())  // ✅ use email as username
-                    .email(request.getEmail())
-                    .password(passwordEncoder.encode("Default@123")) // default password
-                    .role(Role.STUDENT) // assign student role
-                    .build();
+//            User user = User.builder()
+//                    .username(request.getEmail())  // ✅ use email as username
+//                    .email(request.getEmail())
+//                    .password(passwordEncoder.encode("Default@123")) // default password
+//                    .role(Role.STUDENT) // assign student role
+//                    .build();
+
+            User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User with given " + request.getEmail() + " is not present in database"));
 
             // ✅ Create Student
             Student student = Student.builder()
