@@ -14,7 +14,7 @@ import java.util.List;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/admin/students")
+@RequestMapping("/api/students/admin")
 @RequiredArgsConstructor
 public class AdminStudentController {
 

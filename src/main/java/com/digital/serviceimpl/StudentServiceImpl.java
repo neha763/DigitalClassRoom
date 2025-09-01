@@ -8,16 +8,19 @@ import com.digital.entity.SchoolClass;
 import com.digital.entity.Section;
 import com.digital.entity.Student;
 import com.digital.entity.User;
+
+import com.digital.exception.ResourceNotFoundException;
+
 import com.digital.enums.Role;
 import com.digital.enums.Status;
 import com.digital.repository.ClassRepository;
 import com.digital.repository.SectionRepository;
+
 import com.digital.repository.StudentRepository;
 import com.digital.repository.UserRepository;
 import com.digital.servicei.StudentService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +53,10 @@ public class StudentServiceImpl implements StudentService {
 //                    .password(passwordEncoder.encode("Default@123")) // default password
 //                    .role(Role.STUDENT) // assign student role
 //                    .build();
+
+
+            User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User with given " + request.getEmail() + " is not present in database"));
+
 User user = userRepository.findByEmail(request.getEmail())
         .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getEmail()));
             // ✅ Fetch SchoolClass and Section entities
@@ -58,6 +65,7 @@ User user = userRepository.findByEmail(request.getEmail())
 
             Section section = sectionRepository.findById(request.getSectionId())
                     .orElseThrow(() -> new RuntimeException("Section not found with ID: " + request.getSectionId()));
+
 
             // ✅ Create Student
             Student student = Student.builder()

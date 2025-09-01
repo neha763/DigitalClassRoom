@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/section")
 @CrossOrigin(origins = "*") // Allow requests from any domain
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminSectionController {

@@ -55,6 +55,58 @@ public class AppConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         logger.info("Building Security Filter Chain...");
 
+
+                         // auth login
+                        .requestMatchers("/api/auth/login").permitAll()
+
+                        // user apis
+                        .requestMatchers("/api/user/otp", "/api/user/password").permitAll()
+                        .requestMatchers("/api/user/create", "/api/user/status/*").hasRole("ADMIN")
+
+                        // audit log apis
+                        .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
+                        .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
+
+                        // attendance rule apis
+                        .requestMatchers( "/api/attendanceRules/**").hasRole("ADMIN")
+
+                        // class session apis
+                        .requestMatchers("/api/session").hasRole("TEACHER")
+                        .requestMatchers("/api/session/get").hasAnyRole("TEACHER', 'STUDENT', 'ADMIN")
+
+                         // attendance apis for STUDENT AND TEACHER
+                        .requestMatchers("/api/attendance/join-session/*", "/api/attendance/leave-session/*")
+                           .hasRole("STUDENT")
+
+                        .requestMatchers("/api/attendance/auto-mark/*", "/api/attendance/check-in-list/*",
+                                "/api/attendance/view/*", "/api/attendance/view-all/*", "/api/attendance/update/*")
+                           .hasRole("TEACHER")
+
+                        // attendance apis for ADMIN
+                        .requestMatchers("/api/attendance/admin/update/*", "/api/attendance/admin/view/*",
+                                "/api/attendance/admin/view-all/*", "/api/attendance/admin/delete/*").hasRole("ADMIN")
+
+                        .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
+
+
+                           .requestMatchers("/api/teacher/**").hasRole("ADMIN")
+//                           .requestMatchers("/api/teacher/**").permitAll()
+
+                            //class and section
+
+                        .requestMatchers("/api/class/**").hasRole("ADMIN")
+                        .requestMatchers("/api/section/**").hasRole("ADMIN")
+
+//                        .requestMatchers("/admin/**").hasRole("ADMIN")
+//                        .requestMatchers("/admin/classes/**").hasRole("ADMIN")
+//                        .requestMatchers("/admin/classes/**/sections").hasRole("ADMIN")
+//                        .requestMatchers("/admin/classes").hasRole("ADMIN")
+//                        //.requestMatchers("/admin/classes/{id}").hasRole("ADMIN")
+//                        .requestMatchers("/admin/classes/*").hasRole("ADMIN")
+
+
+                        .requestMatchers("/api/**").authenticated())
+
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll()
@@ -69,6 +121,7 @@ public class AppConfig {
                         .requestMatchers("/admin/classes/**/sections").hasRole("ADMIN")
                         .requestMatchers("/admin/classes").hasRole("ADMIN")
                         .requestMatchers("/admin/classes/*").hasRole("ADMIN")
+
 
                 )
                 .exceptionHandling(ex -> ex
