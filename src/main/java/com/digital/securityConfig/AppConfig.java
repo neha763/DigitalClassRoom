@@ -26,7 +26,6 @@ public class AppConfig {
     private final Logger logger = LoggerFactory.getLogger(AppConfig.class);
 
     private final CustomUserDetailsService userDetailsService;
-
     private final AppFilter appFilter;
 
     public AppConfig(CustomUserDetailsService userDetailsService, AppFilter appFilter) {
@@ -35,73 +34,65 @@ public class AppConfig {
     }
 
     @Bean
-    public PasswordEncoder getPasswordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    AuthenticationProvider authenticationProvider(){
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(getPasswordEncoder());
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
 
     @Bean
-    AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        logger.info("in filter chain");
-        return http.csrf(AbstractHttpConfigurer::disable)
-                   .authorizeHttpRequests(requests -> requests
+        logger.info("Building Security Filter Chain...");
 
+        http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll()
-
                         .requestMatchers("/api/user/otp", "/api/user/password").permitAll()
                         .requestMatchers("/api/user/create", "/api/user/status/*").hasRole("ADMIN")
-
-
                         .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
                         .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
-                           .requestMatchers("/api/teacher/**").hasRole("ADMIN")
-//                           .requestMatchers("/api/teacher/**").permitAll()
-                           .requestMatchers("/api/**").authenticated())
+                        .requestMatchers("/api/teacher/**").hasRole("ADMIN")
+                        .requestMatchers("/api/**").authenticated()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/classes/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/classes/**/sections").hasRole("ADMIN")
+                        .requestMatchers("/admin/classes").hasRole("ADMIN")
+                        .requestMatchers("/admin/classes/*").hasRole("ADMIN")
 
-//class and section
-                           .requestMatchers("/admin/**").hasRole("ADMIN")
-                           .requestMatchers("/admin/classes/**").hasRole("ADMIN")
-                           .requestMatchers("/admin/classes/**/sections").hasRole("ADMIN")
-
-                           .requestMatchers("/admin/classes").hasRole("ADMIN")
-                           //.requestMatchers("/admin/classes/{id}").hasRole("ADMIN")
-                           .requestMatchers("/admin/classes/*").hasRole("ADMIN")
-
-
-
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(authenticationEntryPoint())
-                        .accessDeniedHandler(accessDeniedHandler())
                 )
-                .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint())
+                        .accessDeniedHandler(customAccessDeniedHandler())
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(appFilter, UsernamePasswordAuthenticationFilter.class).build();
+                .addFilterBefore(appFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 
     @Bean
-    public AuthenticationEntryPoint authenticationEntryPoint() {
+    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
         return (request, response, authException) -> {
             throw new CustomUnauthorizedException("Unauthorized - Please log in");
         };
     }
 
     @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
+    public AccessDeniedHandler customAccessDeniedHandler() {
         return (request, response, accessDeniedException) -> {
             throw new CustomForbiddenException("Forbidden - You do not have access to this resource");
         };
     }
-
 }

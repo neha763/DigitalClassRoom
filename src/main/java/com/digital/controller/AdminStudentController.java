@@ -1,5 +1,6 @@
 package com.digital.controller;
 
+import com.digital.dto.EnrollmentRequest;
 import com.digital.dto.StudentRequest;
 import com.digital.dto.StudentResponse;
 import com.digital.entity.User;
@@ -44,5 +45,23 @@ public class AdminStudentController {
     public ResponseEntity<String> deleteStudent(@PathVariable Long id) {
         String response = studentService.deleteStudent(id);
         return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{studentId}/enroll")
+    public ResponseEntity<StudentResponse> enrollStudent(
+            @PathVariable Long studentId,
+            @RequestBody EnrollmentRequest request) {
+        StudentResponse response = studentService.enrollStudent(studentId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/class/{classId}")
+    public ResponseEntity<List<StudentResponse>> getStudentsByClass(
+            @PathVariable Long classId,
+            @RequestParam(value = "sectionId", required = false) Long sectionId) {
+        List<StudentResponse> students = studentService.getStudentsByClass(classId, sectionId);
+        return ResponseEntity.ok(students);
     }
 }

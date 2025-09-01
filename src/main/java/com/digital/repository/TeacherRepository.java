@@ -11,4 +11,5 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     boolean existsByEmail(String email);
 
     Optional<Teacher> findByEmail(String email); // <-- Add this
+    Optional<Teacher> findByUserUsername(String username);
 }

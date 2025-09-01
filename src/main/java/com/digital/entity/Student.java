@@ -20,12 +20,9 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studentRegId;
 
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
-
-
 
     @Column(nullable = false, unique = true)
     @NotBlank(message = "Roll number is required")
@@ -33,52 +30,53 @@ public class Student {
     private String rollNumber;
 
     @NotBlank(message = "First name is required")
-    @Size(max = 50, message = "First name cannot exceed 50 characters")
+    @Size(max = 50)
     private String firstName;
 
-    @Size(max = 50, message = "Middle name cannot exceed 50 characters")
+    @Size(max = 50)
     private String middleName;
 
     @NotBlank(message = "Last name is required")
-    @Size(max = 50, message = "Last name cannot exceed 50 characters")
+    @Size(max = 50)
     private String lastName;
 
     @Column(nullable = false, unique = true)
     @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
+    @Email
     private String email;
 
-    @Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must be exactly 10 digits")
+    @Pattern(regexp = "^[0-9]{10}$")
     private String mobileNumber;
 
-    @Past(message = "Date of birth must be in the past")
+    @Past
     private LocalDate dateOfBirth;
 
-    @Pattern(regexp = "^(Male|Female|Other)$", message = "Gender must be Male, Female, or Other")
+    @Pattern(regexp = "^(Male|Female|Other)$")
     private String gender;
 
-    // Address
-    @Size(max = 100, message = "Street cannot exceed 100 characters")
+    @Size(max = 100)
     private String street;
 
-    @Size(max = 50, message = "City cannot exceed 50 characters")
+    @Size(max = 50)
     private String city;
 
-    @Size(max = 50, message = "State cannot exceed 50 characters")
+    @Size(max = 50)
     private String state;
 
-    @Size(max = 50, message = "Country cannot exceed 50 characters")
+    @Size(max = 50)
     private String country;
 
-    @Pattern(regexp = "^[0-9]{5,10}$", message = "Pin code must be 5–10 digits")
+    @Pattern(regexp = "^[0-9]{5,10}$")
     private String pinCode;
 
-    // Class & Section
-    @NotNull(message = "Class ID is required")
-    private Long classId;
+    // Relationships
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id", nullable = false)
+    private SchoolClass schoolClass;
 
-    @NotNull(message = "Section ID is required")
-    private Long sectionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "section_id", nullable = false)
+    private Section section;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -86,10 +84,10 @@ public class Student {
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now(); // set updatedAt initially same as createdAt
     }
 
     @PreUpdate
-
     public void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }

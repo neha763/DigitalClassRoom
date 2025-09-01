@@ -1,8 +1,10 @@
 package com.digital.servicei;
 
+import com.digital.dto.EnrollmentRequest;
 import com.digital.dto.StudentRequest;
 import com.digital.dto.StudentResponse;
 import com.digital.dto.DashboardResponse;
+import com.digital.entity.Student;
 import com.digital.entity.User;
 
 import java.util.List;
@@ -16,5 +18,11 @@ public interface StudentService {
     StudentResponse updateStudentProfile(Long userId, StudentRequest request);
     DashboardResponse getDashboard(Long userId);
     String deleteStudent(Long studentId);
+    // Enroll student in a class & section
+    StudentResponse enrollStudent(Long studentId, EnrollmentRequest request);
 
+    // Get all students in a class
+    List<StudentResponse> getStudentsByClass(Long classId, Long sectionId);
+    StudentResponse getStudentClassDetails(Long studentId);
+    Student getStudentByUsername(String username);
 }
