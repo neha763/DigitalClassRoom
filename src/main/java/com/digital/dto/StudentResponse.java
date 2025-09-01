@@ -32,7 +32,13 @@ public class StudentResponse {
 
     // Class & Section
     private Long classId;
+    private String className;
     private Long sectionId;
+    private String sectionName;
+    private LocalDateTime enrolledAt;
+
+
+
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -57,11 +63,15 @@ public class StudentResponse {
                 .state(student.getState())
                 .country(student.getCountry())
                 .pinCode(student.getPinCode())
-                .classId(student.getClassId())
-                .sectionId(student.getSectionId())
+                // Get IDs and Names from relationships
+                .classId(student.getSchoolClass() != null ? student.getSchoolClass().getClassId() : null)
+                .className(student.getSchoolClass() != null ? student.getSchoolClass().getClassName() : null)
+                .sectionId(student.getSection() != null ? student.getSection().getSectionId() : null)
+                .sectionName(student.getSection() != null ? student.getSection().getSectionName() : null)
                 .createdAt(student.getCreatedAt())
                 .updatedAt(student.getUpdatedAt())
                 .username(student.getUser() != null ? student.getUser().getUsername() : null)
                 .build();
     }
+
 }

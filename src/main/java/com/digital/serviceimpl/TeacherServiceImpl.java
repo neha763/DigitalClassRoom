@@ -1,7 +1,15 @@
 package com.digital.serviceimpl;
 
+import com.digital.dto.AssignTeacherRequest;
+import com.digital.dto.AssignedTeacherResponse;
 import com.digital.dto.TeacherDto;
+import com.digital.entity.ClassTeacher;
+import com.digital.entity.SchoolClass;
+import com.digital.entity.Section;
 import com.digital.entity.Teacher;
+import com.digital.repository.ClassRepository;
+import com.digital.repository.ClassTeacherRepository;
+import com.digital.repository.SectionRepository;
 import com.digital.repository.TeacherRepository;
 import com.digital.servicei.TeacherService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +23,9 @@ import java.util.stream.Collectors;
 public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository teacherRepository;
+    private final ClassTeacherRepository classTeacherRepository;
+    private final ClassRepository classRepository;
+    private final SectionRepository sectionRepository;
 
     private TeacherDto mapToDto(Teacher teacher) {
         return TeacherDto.builder()
@@ -73,4 +84,95 @@ public class TeacherServiceImpl implements TeacherService {
     public void deleteTeacher(Long id) {
         teacherRepository.deleteById(id);
     }
+
+    @Override
+    public AssignedTeacherResponse assignTeacher(Long classId, Long sectionId, AssignTeacherRequest request) {
+        // check class, section, teacher exist
+        SchoolClass schoolClass = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new RuntimeException("Section not found"));
+
+        Teacher teacher = teacherRepository.findById(request.getTeacherId())
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
+        // prevent duplicate mapping
+        if (classTeacherRepository.existsByClassIdAndSectionIdAndTeacherId(classId, sectionId, teacher.getId())) {
+            throw new RuntimeException("Teacher already assigned to this class and section");
+        }
+
+        ClassTeacher mapping = ClassTeacher.builder()
+                .classId(classId)
+                .sectionId(sectionId)
+                .teacher(teacher) // set Teacher entity
+                .build();
+
+        classTeacherRepository.save(mapping); // JPA will persist teacher_id foreign key automatically
+
+        return AssignedTeacherResponse.builder()
+                .id(mapping.getId())
+                .classId(classId)
+                .className(schoolClass.getClassName())
+                .sectionId(sectionId)
+                .sectionName(section.getSectionName())
+                .teacherId(mapping.getTeacher().getId())
+                .teacherName(mapping.getTeacher().getFirstName() + " " + mapping.getTeacher().getLastName())
+                .assignedAt(mapping.getAssignedAt())
+                .build();
+
+    }
+
+    @Override
+    public List<AssignedTeacherResponse> getAssignedTeachers(Long classId) {
+        SchoolClass schoolClass = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        return classTeacherRepository.findByClassId(classId).stream().map(mapping -> {
+            Section section = sectionRepository.findById(mapping.getSectionId()).orElse(null);
+            Teacher teacher = mapping.getTeacher(); // use the entity
+
+            return AssignedTeacherResponse.builder()
+                    .id(mapping.getId())
+                    .classId(classId)
+                    .className(schoolClass.getClassName())
+                    .sectionId(mapping.getSectionId())
+                    .sectionName(section != null ? section.getSectionName() : null)
+                    .teacherId(teacher != null ? teacher.getId() : null)   // ✅ fix here
+                    .teacherName(teacher != null ? teacher.getFirstName() + " " + teacher.getLastName() : null) // ✅ fix here
+                    .assignedAt(mapping.getAssignedAt())
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+//teacher view
+    @Override
+    public List<AssignedTeacherResponse> getAssignedClassesForTeacher(Long teacherId) {
+        List<ClassTeacher> assignments = classTeacherRepository.findByTeacherId(teacherId);
+
+        return assignments.stream().map(mapping -> {
+            SchoolClass schoolClass = classRepository.findById(mapping.getClassId()).orElse(null);
+            Section section = sectionRepository.findById(mapping.getSectionId()).orElse(null);
+            Teacher teacher = mapping.getTeacher(); // fetch teacher entity
+
+            return AssignedTeacherResponse.builder()
+                    .id(mapping.getId())
+                    .classId(mapping.getClassId())
+                    .className(schoolClass != null ? schoolClass.getClassName() : null)
+                    .sectionId(mapping.getSectionId())
+                    .sectionName(section != null ? section.getSectionName() : null)
+                    .teacherId(teacher != null ? teacher.getId() : null) // set teacherId
+                    .teacherName(teacher != null ? teacher.getFirstName() + " " + teacher.getLastName() : null) // set teacherName
+                    .assignedAt(mapping.getAssignedAt())
+                    .build();
+        }).collect(Collectors.toList());
+    }
+    @Override
+    public Teacher getTeacherByUsername(String username) {
+        return teacherRepository.findByUserUsername(username)
+                .orElseThrow(() -> new RuntimeException("Teacher not found with username: " + username));
+    }
+
 }
+
+
