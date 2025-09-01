@@ -1,6 +1,8 @@
 package com.digital.repository;
 
+import com.digital.entity.SchoolClass;
 import com.digital.entity.Student;
+import com.digital.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,9 +14,19 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     boolean existsByEmail(String email);
 
     // Check if roll number already exists in a given class
-    boolean existsByRollNumberAndClassId(String rollNumber, Long classId);
+    boolean existsByRollNumberAndSchoolClass_ClassId(String rollNumber, Long classId);
+
 
     Optional<Student> findByUser_Username(String username);
 
     List<Student> findAllByClassIdAndSectionId(Long classId, Long sectionId);
+
+    List<Student> findBySchoolClass_ClassId(Long classId);
+
+    List<Student> findBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
+   // Optional<Student> findByUserId(Long userId);
+    Optional<Student> findByUser_UserId(Long userId);
+    Optional<Student> findByUserUsername(String username);
+    Optional<Student> findByUser(User user);
+
 }

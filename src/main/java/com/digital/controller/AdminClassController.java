@@ -83,4 +83,5 @@ public class AdminClassController {
                 .updatedAt(section.getUpdatedAt())
                 .build();
     }
+
 }

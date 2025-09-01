@@ -1,14 +1,25 @@
 package com.digital.serviceimpl;
 
+import com.digital.dto.EnrollmentRequest;
 import com.digital.dto.StudentRequest;
 import com.digital.dto.StudentResponse;
 import com.digital.dto.DashboardResponse;
+import com.digital.entity.SchoolClass;
+import com.digital.entity.Section;
 import com.digital.entity.Student;
 import com.digital.entity.User;
+
 import com.digital.exception.ResourceNotFoundException;
+
+import com.digital.enums.Role;
+import com.digital.enums.Status;
+import com.digital.repository.ClassRepository;
+import com.digital.repository.SectionRepository;
+
 import com.digital.repository.StudentRepository;
 import com.digital.repository.UserRepository;
 import com.digital.servicei.StudentService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,8 +37,13 @@ public class StudentServiceImpl implements StudentService {
     private final PasswordEncoder passwordEncoder; // <-- injected here
 
 
+    private final ClassRepository classRepository;
+    private final SectionRepository sectionRepository;
+
+
 
     @Override
+
     public StudentResponse createStudent(StudentRequest request) {
         try {
             // ✅ Create User for Student
@@ -38,7 +54,18 @@ public class StudentServiceImpl implements StudentService {
 //                    .role(Role.STUDENT) // assign student role
 //                    .build();
 
+
             User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User with given " + request.getEmail() + " is not present in database"));
+
+User user = userRepository.findByEmail(request.getEmail())
+        .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getEmail()));
+            // ✅ Fetch SchoolClass and Section entities
+            SchoolClass schoolClass = classRepository.findById(request.getClassId())
+                    .orElseThrow(() -> new RuntimeException("Class not found with ID: " + request.getClassId()));
+
+            Section section = sectionRepository.findById(request.getSectionId())
+                    .orElseThrow(() -> new RuntimeException("Section not found with ID: " + request.getSectionId()));
+
 
             // ✅ Create Student
             Student student = Student.builder()
@@ -56,8 +83,8 @@ public class StudentServiceImpl implements StudentService {
                     .state(request.getState())
                     .country(request.getCountry())
                     .pinCode(request.getPinCode())
-                    .classId(request.getClassId())
-                    .sectionId(request.getSectionId())
+                    .schoolClass(schoolClass)   // now defined
+                    .section(section)           // now defined
                     .build();
 
             Student saved = studentRepository.save(student);
@@ -74,8 +101,27 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         student.setRollNumber(request.getRollNumber());
-        student.setClassId(request.getClassId());
-        student.setSectionId(request.getSectionId());
+        student.setFirstName(request.getFirstName());
+        student.setMiddleName(request.getMiddleName());
+        student.setLastName(request.getLastName());
+        student.setEmail(request.getEmail());
+        student.setMobileNumber(request.getMobileNumber());
+        student.setDateOfBirth(request.getDateOfBirth());
+        student.setGender(request.getGender());
+        student.setStreet(request.getStreet());
+        student.setCity(request.getCity());
+        student.setState(request.getState());
+        student.setCountry(request.getCountry());
+        student.setPinCode(request.getPinCode());
+
+        // Fetch and set class & section entities
+        SchoolClass schoolClass = classRepository.findById(request.getClassId())
+                .orElseThrow(() -> new RuntimeException("Class not found with ID: " + request.getClassId()));
+        Section section = sectionRepository.findById(request.getSectionId())
+                .orElseThrow(() -> new RuntimeException("Section not found with ID: " + request.getSectionId()));
+
+        student.setSchoolClass(schoolClass);
+        student.setSection(section);
 
         return mapToResponse(studentRepository.save(student));
     }
@@ -154,13 +200,128 @@ public class StudentServiceImpl implements StudentService {
                 .state(student.getState())
                 .country(student.getCountry())
                 .pinCode(student.getPinCode())
-                .classId(student.getClassId())
-                .sectionId(student.getSectionId())
+                .classId(student.getSchoolClass() != null ? student.getSchoolClass().getClassId() : null)
+                .className(student.getSchoolClass() != null ? student.getSchoolClass().getClassName() : null)
+                .sectionId(student.getSection() != null ? student.getSection().getSectionId() : null)
+                .sectionName(student.getSection() != null ? student.getSection().getSectionName() : null)
                 .createdAt(student.getCreatedAt())
                 .updatedAt(student.getUpdatedAt())
                 .username(student.getUser() != null ? student.getUser().getUsername() : null)
                 .build();
     }
 
+
+    @Override
+    public StudentResponse enrollStudent(Long studentId, EnrollmentRequest request) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + studentId));
+
+        SchoolClass schoolClass = classRepository.findById(request.getClassId())
+                .orElseThrow(() -> new EntityNotFoundException("Class not found with ID: " + request.getClassId()));
+
+        Section section = sectionRepository.findById(request.getSectionId())
+                .orElseThrow(() -> new EntityNotFoundException("Section not found with ID: " + request.getSectionId()));
+
+        student.setSchoolClass(schoolClass);
+        student.setSection(section);
+
+        studentRepository.save(student);
+
+        // Fetch again to ensure all fields are up-to-date
+        Student updatedStudent = studentRepository.findById(studentId).get();
+        return mapToResponse(updatedStudent);
+    }
+
+
+    @Override
+    public List<StudentResponse> getStudentsByClass(Long classId, Long sectionId) {
+        if (sectionId != null) {
+            return studentRepository.findBySchoolClass_ClassIdAndSection_SectionId(classId, sectionId)
+                    .stream().map(this::toResponse).collect(Collectors.toList());
+        } else {
+            return studentRepository.findBySchoolClass_ClassId(classId)
+                    .stream().map(this::toResponse).collect(Collectors.toList());
+        }
+    }
+
+    private StudentResponse toResponse(Student student) {
+        return StudentResponse.builder()
+                .studentRegId(student.getStudentRegId())
+                .rollNumber(student.getRollNumber())
+                .firstName(Optional.ofNullable(student.getFirstName()).orElse(""))
+                .middleName(Optional.ofNullable(student.getMiddleName()).orElse(""))
+                .lastName(Optional.ofNullable(student.getLastName()).orElse(""))
+                .email(student.getEmail())
+                .mobileNumber(student.getMobileNumber())
+                .dateOfBirth(student.getDateOfBirth())
+                .gender(student.getGender())
+                .street(student.getStreet())
+                .city(student.getCity())
+                .state(student.getState())
+                .country(student.getCountry())
+                .pinCode(student.getPinCode())
+                .classId(student.getSchoolClass() != null ? student.getSchoolClass().getClassId() : null)
+                .className(student.getSchoolClass() != null ? student.getSchoolClass().getClassName() : null)
+                .sectionId(student.getSection() != null ? student.getSection().getSectionId() : null)
+                .sectionName(student.getSection() != null ? student.getSection().getSectionName() : null)
+                .createdAt(student.getCreatedAt())
+                .updatedAt(student.getUpdatedAt())
+                .username(student.getUser() != null ? student.getUser().getUsername() : null)
+                .build();
+    }
+
+//    @Override
+//    public StudentResponse getStudentClassDetails(Long studentId) {
+//        Student student = studentRepository.findById(studentId)
+//                .orElseThrow(() -> new RuntimeException("Student not found"));
+//
+//        return StudentResponse.builder()
+//                .classId(student.getSchoolClass().getClassId())
+//                .className(student.getSchoolClass().getClassName())
+//                .sectionId(student.getSection().getSectionId())
+//                .sectionName(student.getSection().getSectionName())
+//                .enrolledAt(student.getCreatedAt())
+//                .build();
+//    }
+@Override
+public StudentResponse getStudentClassDetails(Long studentId) {
+    Student student = studentRepository.findById(studentId)
+            .orElseThrow(() -> new RuntimeException("Student not found"));
+
+    return StudentResponse.builder()
+            .studentRegId(student.getStudentRegId())
+            .rollNumber(student.getRollNumber())
+            .firstName(student.getFirstName())
+            .middleName(student.getMiddleName())
+            .lastName(student.getLastName())
+            .email(student.getEmail())
+            .mobileNumber(student.getMobileNumber())
+            .dateOfBirth(student.getDateOfBirth())
+            .gender(student.getGender())
+            .street(student.getStreet())
+            .city(student.getCity())
+            .state(student.getState())
+            .country(student.getCountry())
+            .pinCode(student.getPinCode())
+            .classId(student.getSchoolClass() != null ? student.getSchoolClass().getClassId() : null)
+            .className(student.getSchoolClass() != null ? student.getSchoolClass().getClassName() : null)
+            .sectionId(student.getSection() != null ? student.getSection().getSectionId() : null)
+            .sectionName(student.getSection() != null ? student.getSection().getSectionName() : null)
+            .enrolledAt(student.getCreatedAt())
+            .createdAt(student.getCreatedAt())
+            .updatedAt(student.getUpdatedAt())
+            .username(student.getUser() != null ? student.getUser().getUsername() : null)
+            .build();
+}
+    @Override
+    public Student getStudentByUsername(String username) {
+        // Fetch User from User table
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+
+        // Fetch Student linked to this User
+        return studentRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Student not found for user: " + username));
+    }
 
 }
