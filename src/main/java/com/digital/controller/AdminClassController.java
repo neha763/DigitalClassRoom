@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/admin/classes")
+@RequestMapping("/api/class")
 @CrossOrigin(origins = "*") // Allow requests from any domain
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminClassController {

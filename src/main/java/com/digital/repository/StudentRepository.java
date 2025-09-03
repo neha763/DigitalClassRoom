@@ -16,6 +16,11 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     // Check if roll number already exists in a given class
     boolean existsByRollNumberAndSchoolClass_ClassId(String rollNumber, Long classId);
 
+
+    Optional<Student> findByUser_Username(String username);
+
+    List<Student> findAllByClassIdAndSectionId(Long classId, Long sectionId);
+
     List<Student> findBySchoolClass_ClassId(Long classId);
 
     List<Student> findBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
@@ -23,4 +28,5 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     Optional<Student> findByUser_UserId(Long userId);
     Optional<Student> findByUserUsername(String username);
     Optional<Student> findByUser(User user);
+
 }

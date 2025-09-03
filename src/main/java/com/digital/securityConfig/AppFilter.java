@@ -57,8 +57,8 @@ public class AppFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
 
                     logger.info("✅ User '{}' authenticated with roles: {}",
-                            userDetails.getUsername(),
-                            userDetails.getAuthorities());
+                        userDetails.getUsername(),
+                        userDetails.getAuthorities());
                 } else {
                     logger.warn("❌ Invalid JWT token for user {}", username);
                     throw new CustomUnauthorizedException("Invalid or expired JWT token");
