@@ -218,7 +218,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         // As there is no mapping available between Student, SchoolClass and Section in Student class, so we are using
         // following method
-        List<Student> allByClassIdAndSectionId = studentRepository.findAllByClassIdAndSectionId(classId, sectionId);
+        List<Student> allByClassIdAndSectionId = studentRepository.findAllBySchoolClass_ClassIdAndSection_SectionId(classId, sectionId);
 
         AtomicInteger absentStudentCount = new AtomicInteger();
 
