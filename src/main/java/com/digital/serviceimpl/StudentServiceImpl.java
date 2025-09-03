@@ -15,7 +15,7 @@ import com.digital.repository.UserRepository;
 import com.digital.servicei.StudentService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,7 +29,7 @@ public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder; // <-- injected here
+    //private final PasswordEncoder passwordEncoder; // <-- injected here
 
 
     private final ClassRepository classRepository;
@@ -41,13 +41,6 @@ public class StudentServiceImpl implements StudentService {
 
     public StudentResponse createStudent(StudentRequest request) {
         try {
-            // ✅ Create User for Student
-//            User user = User.builder()
-//                    .username(request.getEmail())  // ✅ use email as username
-//                    .email(request.getEmail())
-//                    .password(passwordEncoder.encode("Default@123")) // default password
-//                    .role(Role.STUDENT) // assign student role
-//                    .build();
 User user = userRepository.findByEmail(request.getEmail())
         .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getEmail()));
             // ✅ Fetch SchoolClass and Section entities
