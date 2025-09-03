@@ -62,10 +62,7 @@ public class StudentServiceImpl implements StudentService {
 //                    .build();
 
 
-            User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User with given " + request.getEmail() + " is not present in database"));
-
-
-User user = userRepository.findByEmail(request.getEmail())
+            User user = userRepository.findByEmail(request.getEmail())
         .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getEmail()));
             // ✅ Fetch SchoolClass and Section entities
             SchoolClass schoolClass = classRepository.findById(request.getClassId())

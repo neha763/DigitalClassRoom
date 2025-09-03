@@ -54,7 +54,8 @@ public class AppConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         logger.info("Building Security Filter Chain...");
-
+        http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
 
                          // auth login
                         .requestMatchers("/api/auth/login").permitAll()
@@ -105,10 +106,9 @@ public class AppConfig {
 //                        .requestMatchers("/admin/classes/*").hasRole("ADMIN")
 
 
-                        .requestMatchers("/api/**").authenticated())
+                        .requestMatchers("/api/**").authenticated()
 
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
+
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/user/otp", "/api/user/password").permitAll()
                         .requestMatchers("/api/user/create", "/api/user/status/*").hasRole("ADMIN")
