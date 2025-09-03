@@ -77,18 +77,21 @@ public class Student {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", nullable = false)
     private Section section;
+    // ✅ New field for enrollment timestamp
+    private LocalDateTime enrolledAt;
+
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now(); // set updatedAt initially same as createdAt
-    }
+//    @PrePersist
+//    public void onCreate() {
+//        this.createdAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now(); // set updatedAt initially same as createdAt
+//    }
 
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+//    @PreUpdate
+//    public void onUpdate() {
+//        this.updatedAt = LocalDateTime.now();
+//    }
 }

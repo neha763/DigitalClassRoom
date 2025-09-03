@@ -68,6 +68,7 @@ public class StudentResponse {
                 .className(student.getSchoolClass() != null ? student.getSchoolClass().getClassName() : null)
                 .sectionId(student.getSection() != null ? student.getSection().getSectionId() : null)
                 .sectionName(student.getSection() != null ? student.getSection().getSectionName() : null)
+                .enrolledAt(student.getEnrolledAt())
                 .createdAt(student.getCreatedAt())
                 .updatedAt(student.getUpdatedAt())
                 .username(student.getUser() != null ? student.getUser().getUsername() : null)
