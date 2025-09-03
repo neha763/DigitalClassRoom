@@ -21,6 +21,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -217,12 +218,17 @@ User user = userRepository.findByEmail(request.getEmail())
         student.setSchoolClass(schoolClass);
         student.setSection(section);
 
+        // ✅ set enrolledAt timestamp
+        if (student.getEnrolledAt() == null) {
+            student.setEnrolledAt(LocalDateTime.now());
+        }
+
         studentRepository.save(student);
 
-        // Fetch again to ensure all fields are up-to-date
-        Student updatedStudent = studentRepository.findById(studentId).get();
-        return mapToResponse(updatedStudent);
+        // ✅ map using DTO factory method
+        return StudentResponse.fromEntity(student);
     }
+
 
 
     @Override

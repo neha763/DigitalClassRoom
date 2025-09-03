@@ -77,6 +77,9 @@ public class Student {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", nullable = false)
     private Section section;
+    // ✅ New field for enrollment timestamp
+    private LocalDateTime enrolledAt;
+
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
