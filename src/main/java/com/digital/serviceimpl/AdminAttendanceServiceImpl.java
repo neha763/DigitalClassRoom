@@ -106,6 +106,7 @@ public class AdminAttendanceServiceImpl implements AdminAttendanceService {
                 new ResourceNotFoundException("Section record with id " + student.getSection().getSectionId() +
                         " not found in database"));
 
+
         List<Attendance> attendancesFromToToDate = attendanceRepository.findAllByDateBetween(request.getFromDate(),
                 request.getToDate());
 

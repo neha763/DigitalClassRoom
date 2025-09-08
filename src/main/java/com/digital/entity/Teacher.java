@@ -9,6 +9,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -21,33 +24,47 @@ public class Teacher {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
-
     private String firstName;
-
     private String lastName;
-
 
     @NotBlank(message = "Email is required")
     @Column(nullable = false, unique = true)
     private String email;
 
-
     private String phone;
-
     private String qualification;
-
     private Integer experienceYears;
-
     private String gender;
-
-    private String assignedClasses;
-
-
     private String dateOfBirth;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;
+
+
+    @ManyToMany
+    @JoinTable(
+            name = "teacher_class",
+            joinColumns = @JoinColumn(name = "teacher_id"),
+            inverseJoinColumns = @JoinColumn(name = "class_id")
+    )
+    private List<SchoolClass> assignedClass = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "teacher_section",
+            joinColumns = @JoinColumn(name = "teacher_id"),
+            inverseJoinColumns = @JoinColumn(name = "section_id")
+    )
+    private List<Section> assignedSection = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "teacher_student",
+            joinColumns = @JoinColumn(name = "teacher_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_reg_id")
+    )
+    private List<Student> student = new ArrayList<>();
+
 }
