@@ -109,6 +109,12 @@ public class AppConfig {
                         .requestMatchers("/api/**").authenticated()
 
 
+//        http.csrf(AbstractHttpConfigurer::disable)
+//                .authorizeHttpRequests(auth -> auth
+
+
+
+
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/user/otp", "/api/user/password").permitAll()
                         .requestMatchers("/api/user/create", "/api/user/status/*").hasRole("ADMIN")

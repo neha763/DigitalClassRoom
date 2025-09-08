@@ -70,16 +70,31 @@ public class Student {
     private String pinCode;
 
     // Relationships
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_id", nullable = false)
+//    @ManyToOne(fetch = FetchType.LAZY)
+//   @JoinColumn(name = "class_id", nullable = false)
+////    @JoinColumn( nullable = false)
+//    private SchoolClass schoolClass;
+//
+//    @ManyToOne(fetch = FetchType.LAZY)
+//   @JoinColumn(name = "section_id", nullable = false)
+////    @JoinColumn( nullable = false)
+
+
+    @ManyToOne
+    @JoinColumn(name = "class_id")
     private SchoolClass schoolClass;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "section_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "section_id")
     private Section section;
     // ✅ New field for enrollment timestamp
     private LocalDateTime enrolledAt;
 
+
+    // Getters, setters, etc.
+
+
+//    private Section section;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
