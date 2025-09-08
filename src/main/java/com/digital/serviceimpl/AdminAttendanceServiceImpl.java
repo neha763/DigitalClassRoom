@@ -98,13 +98,14 @@ public class AdminAttendanceServiceImpl implements AdminAttendanceService {
         // As currently there is no mapping established between Student, SchoolClass and Section, so
         // we have to fetch it explicitly from their respective repositories.
 
-        SchoolClass schoolClass = classRepository.findById(student.getClassId()).orElseThrow(() ->
-                new ResourceNotFoundException("Class record with id " + student.getClassId() +
+        SchoolClass schoolClass = classRepository.findById(student.getSchoolClass().getClassId()).orElseThrow(() ->
+                new ResourceNotFoundException("Class record with id " + student.getSchoolClass().getClassId() +
                         " not found in database"));
 
-        Section section = sectionRepository.findById(student.getSectionId()).orElseThrow(() ->
-                new ResourceNotFoundException("Section record with id " + student.getSectionId() +
+        Section section = sectionRepository.findById(student.getSection().getSectionId()).orElseThrow(() ->
+                new ResourceNotFoundException("Section record with id " + student.getSection().getSectionId() +
                         " not found in database"));
+
 
         List<Attendance> attendancesFromToToDate = attendanceRepository.findAllByDateBetween(request.getFromDate(),
                 request.getToDate());
