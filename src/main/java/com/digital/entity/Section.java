@@ -44,6 +44,7 @@ public class Section {
     @JsonIgnore
     private SchoolClass schoolClass;
 
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

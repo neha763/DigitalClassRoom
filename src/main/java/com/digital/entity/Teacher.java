@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,11 +27,7 @@ public class Teacher {
 
     private String firstName;
     private String lastName;
-
-    @NotBlank(message = "Email is required")
-    @Column(nullable = false, unique = true)
     private String email;
-
     private String phone;
     private String qualification;
     private Integer experienceYears;
@@ -49,6 +46,7 @@ public class Teacher {
             joinColumns = @JoinColumn(name = "teacher_id"),
             inverseJoinColumns = @JoinColumn(name = "class_id")
     )
+    @Builder.Default
     private List<SchoolClass> assignedClass = new ArrayList<>();
 
     @ManyToMany
@@ -57,6 +55,7 @@ public class Teacher {
             joinColumns = @JoinColumn(name = "teacher_id"),
             inverseJoinColumns = @JoinColumn(name = "section_id")
     )
+    @Builder.Default
     private List<Section> assignedSection = new ArrayList<>();
 
     @ManyToMany
@@ -65,6 +64,12 @@ public class Teacher {
             joinColumns = @JoinColumn(name = "teacher_id"),
             inverseJoinColumns = @JoinColumn(name = "student_reg_id")
     )
+    @Builder.Default
     private List<Student> student = new ArrayList<>();
 
+
+    @Column(name = "assigned_at")
+    private LocalDateTime assignedAt;
+
 }
+ 
