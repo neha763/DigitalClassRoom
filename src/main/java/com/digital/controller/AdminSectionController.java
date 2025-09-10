@@ -34,15 +34,26 @@ public class AdminSectionController {
 //    }
 
     @PostMapping("/classes/{classId}/sections")
-    public ResponseEntity<Section> addSection(@PathVariable Long classId,
-                                              @Valid @RequestBody SectionRequest request) {
+    public ResponseEntity<SectionResponse> addSection(@PathVariable Long classId,
+                                                      @Valid @RequestBody SectionRequest request) {
         Section section = Section.builder()
                 .sectionName(request.getSectionName())
                 .capacity(request.getCapacity())
                 .build();
+
         Section saved = sectionService.createSection(classId, section);
-        return ResponseEntity.ok(saved);
+
+        // Map entity to DTO
+        SectionResponse response = SectionResponse.builder()
+                .sectionId(saved.getSectionId())
+                .sectionName(saved.getSectionName())
+                .createdAt(saved.getCreatedAt())
+                .updatedAt(saved.getUpdatedAt())
+                .build();
+
+        return ResponseEntity.ok(response);
     }
+
 
     @PutMapping("/sections/{id}")
     public ResponseEntity<Section> updateSection(@PathVariable Long id,

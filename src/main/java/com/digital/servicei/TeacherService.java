@@ -2,6 +2,8 @@ package com.digital.servicei;
 
 //import com.digital.dto.AssignTeacherRequest;
 //import com.digital.dto.AssignedTeacherResponse;
+import com.digital.dto.AssignTeacherRequest;
+import com.digital.dto.AssignedTeacherResponse;
 import com.digital.dto.TeacherCreateRequest;
 import com.digital.dto.TeacherDto;
 import com.digital.entity.Teacher;
@@ -9,13 +11,13 @@ import com.digital.entity.Teacher;
 import java.util.List;
 
 public interface TeacherService {
-    Teacher createTeacher(TeacherCreateRequest request);
+   public TeacherDto createTeacher(TeacherCreateRequest request);
     TeacherDto getTeacherById(Long id);
     List<TeacherDto> getAllTeachers();
     TeacherDto updateTeacher(Long id, Teacher teacher);
     String deleteTeacher(Long id);
     //    @Override
-//    public List<AssignedTeacherResponse> getAssignedClassesForTeacher(Long teacherId) {
+//public List<AssignedTeacherResponse> getAssignedClassesForTeacher(Long teacherId) {
 //        List<ClassTeacher> assignments = classTeacherRepository.findByTeacherId(teacherId);
 //
 //        return assignments.stream().map(mapping -> {
@@ -45,5 +47,10 @@ public interface TeacherService {
 //    List<AssignedTeacherResponse> getAssignedTeachers(Long classId);
 //    List<AssignedTeacherResponse> getAssignedClassesForTeacher(Long teacherId);
 //    Teacher getTeacherByUsername(String username);
+    public List<AssignedTeacherResponse> getAssignedClassesForTeacher(Long teacherId);
+    public Teacher getTeacherByUsername(String username);
+    AssignedTeacherResponse assignTeacher(Long classId, Long sectionId, AssignTeacherRequest request);
+
+    List<AssignedTeacherResponse> getAssignedTeachers(Long classId);
 
 }

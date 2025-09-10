@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserServiceI {
     @Override
     public String add(User user) {
         String normalPassword = user.getPassword();
-       // user.setPassword(passwordEncoder.encode(user.getPassword()));
+       user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         user.setPassword(user.getPassword());
 

@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -42,6 +43,10 @@ public class SchoolClass {
     @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     @JsonIgnore
     private List<Section> sections;
+
+    @ManyToMany(mappedBy = "assignedClass")
+    private List<Teacher> teachers = new ArrayList<>();
+
 
 
     @PrePersist
