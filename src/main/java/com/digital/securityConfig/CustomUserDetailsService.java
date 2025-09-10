@@ -56,13 +56,31 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), getAuthorities(user));
     }
 
-    public Collection<SimpleGrantedAuthority> getAuthorities(Admin admin){
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + admin.getRole()));
-    }
+//    public Collection<SimpleGrantedAuthority> getAuthorities(Admin admin){
+//        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + admin.getRole()));
+//    }
+//
+//    public Collection<SimpleGrantedAuthority> getAuthorities(User user){
+//        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+//    }
+
 
     public Collection<SimpleGrantedAuthority> getAuthorities(User user){
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+        String role = String.valueOf(user.getRole());
+        if (!role.startsWith("ROLE_")) {
+            role = "ROLE_" + role;
+        }
+        return Collections.singletonList(new SimpleGrantedAuthority(role));
     }
+
+    public Collection<SimpleGrantedAuthority> getAuthorities(Admin admin){
+        String role = String.valueOf(admin.getRole());
+        if (!role.startsWith("ROLE_")) {
+            role = "ROLE_" + role;
+        }
+        return Collections.singletonList(new SimpleGrantedAuthority(role));
+    }
+
 
 //    @Override
 //    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -76,10 +94,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 //                .authorities(authority)
 //                .build();
 
-    /// /////////
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + this.userRepository));
-    }
+
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        return List.of(new SimpleGrantedAuthority("ROLE_" + this.userRepository));
+//    }
 
 
 }
