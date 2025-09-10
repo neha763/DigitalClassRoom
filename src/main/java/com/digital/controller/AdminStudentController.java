@@ -1,6 +1,7 @@
 package com.digital.controller;
 
 import com.digital.dto.EnrollmentRequest;
+import com.digital.dto.StudentCreateResponse;
 import com.digital.dto.StudentRequest;
 import com.digital.dto.StudentResponse;
 import com.digital.entity.User;
@@ -49,10 +50,10 @@ public class AdminStudentController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{studentId}/enroll")
-    public ResponseEntity<StudentResponse> enrollStudent(
+    public ResponseEntity<StudentCreateResponse> enrollStudent(
             @PathVariable Long studentId,
             @RequestBody EnrollmentRequest request) {
-        StudentResponse response = studentService.enrollStudent(studentId, request);
+        StudentCreateResponse response = studentService.enrollStudent(studentId, request);
         return ResponseEntity.ok(response);
     }
 

@@ -1,5 +1,7 @@
 package com.digital.controller;
 
+import com.digital.dto.AssignTeacherRequest;
+import com.digital.dto.AssignedTeacherResponse;
 import com.digital.dto.TeacherCreateRequest;
 import com.digital.dto.TeacherDto;
 import com.digital.entity.Teacher;
@@ -27,7 +29,7 @@ public class TeacherController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createTeacher(@RequestBody TeacherCreateRequest request) {
         try {
-            Teacher createdTeacher = teacherService.createTeacher(request);
+            TeacherDto createdTeacher = teacherService.createTeacher(request);
             return ResponseEntity.ok(createdTeacher);
         } catch (Exception e) {
             return ResponseEntity
@@ -35,6 +37,7 @@ public class TeacherController {
                     .body(Map.of("error", "Failed to create teacher: " + e.getMessage()));
         }
     }
+
 
     // ✅ READ by ID
     @GetMapping("/{id}")
@@ -90,5 +93,27 @@ public class TeacherController {
                     .status(500)
                     .body(Map.of("error", "Failed to delete teacher: " + e.getMessage()));
         }
+    }
+    // ✅ ASSIGN TEACHER TO CLASS & SECTION
+    @PostMapping("/classes/{classId}/sections/{sectionId}/assign")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> assignTeacher(
+            @PathVariable Long classId,
+            @PathVariable Long sectionId,
+            @RequestBody AssignTeacherRequest request
+    ) {
+        try {
+            AssignedTeacherResponse response = teacherService.assignTeacher(classId, sectionId, request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(500)
+                    .body(Map.of("error", "Failed to assign teacher: " + e.getMessage()));
+        }
+    }
+    //view assigned teachers
+    @GetMapping("/class/{classId}/teachers")
+    public ResponseEntity<List<AssignedTeacherResponse>> getAssignedTeachers(@PathVariable Long classId) {
+        return ResponseEntity.ok(teacherService.getAssignedTeachers(classId));
     }
 }

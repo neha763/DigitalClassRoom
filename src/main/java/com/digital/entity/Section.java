@@ -9,6 +9,8 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "sections")
@@ -35,6 +37,10 @@ public class Section {
 
 
     private LocalDateTime createdAt;
+
+    @ManyToMany(mappedBy = "assignedSection")
+    private List<Teacher> teachers = new ArrayList<>();
+
 
 
     private LocalDateTime updatedAt;

@@ -1,19 +1,15 @@
 package com.digital.dto;
 
 import com.digital.entity.Student;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudentResponse {
-
+public class StudentCreateResponse {
     private Long studentRegId;
     private String rollNumber;
     private String firstName;
@@ -21,35 +17,24 @@ public class StudentResponse {
     private String lastName;
     private String email;
     private String mobileNumber;
-    private LocalDate dateOfBirth;
+    private String dateOfBirth;
     private String gender;
-
-    // Address
     private String street;
     private String city;
     private String state;
     private String country;
     private String pinCode;
-
-    // Class & Section
     private Long classId;
     private String className;
     private Long sectionId;
     private String sectionName;
-    private LocalDateTime enrolledAt;
-
-
-
-
+    private LocalDateTime enrolledAt;  // only shown after enrollment
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    // username from User entity (optional but useful)
     private String username;
 
-    // Factory method to map from entity
-    public static StudentResponse fromEntity(Student student) {
-        return StudentResponse.builder()
+    public static StudentCreateResponse fromEntity(Student student) {
+        return StudentCreateResponse.builder()
                 .studentRegId(student.getStudentRegId())
                 .rollNumber(student.getRollNumber())
                 .firstName(student.getFirstName())
@@ -57,7 +42,8 @@ public class StudentResponse {
                 .lastName(student.getLastName())
                 .email(student.getEmail())
                 .mobileNumber(student.getMobileNumber())
-                .dateOfBirth(student.getDateOfBirth())
+                .dateOfBirth(student.getDateOfBirth() != null ? student.getDateOfBirth().toString() : null)
+
                 .gender(student.getGender())
                 .street(student.getStreet())
                 .city(student.getCity())
@@ -69,10 +55,10 @@ public class StudentResponse {
                 .className(student.getSchoolClass() != null ? student.getSchoolClass().getClassName() : null)
                 .sectionId(student.getSection() != null ? student.getSection().getSectionId() : null)
                 .sectionName(student.getSection() != null ? student.getSection().getSectionName() : null)
+                .enrolledAt(student.getEnrolledAt())
                 .createdAt(student.getCreatedAt())
                 .updatedAt(student.getUpdatedAt())
                 .username(student.getUser() != null ? student.getUser().getUsername() : null)
                 .build();
     }
-
 }

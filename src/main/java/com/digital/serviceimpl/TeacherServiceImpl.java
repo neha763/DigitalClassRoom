@@ -1,31 +1,36 @@
+
 package com.digital.serviceimpl;
 
-
+import com.digital.dto.AssignTeacherRequest;
+import com.digital.dto.AssignedTeacherResponse;
 import com.digital.dto.TeacherCreateRequest;
 import com.digital.dto.TeacherDto;
 import com.digital.entity.*;
 import com.digital.repository.*;
 import com.digital.servicei.TeacherService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.digital.dto.AssignTeacherRequest;
 
 @Service
 @RequiredArgsConstructor
 public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository teacherRepository;
-    //    private final ClassTeacherRepository classTeacherRepository;
     private final ClassRepository classRepository;
     private final SectionRepository sectionRepository;
-    private final StudentRepository studentRepository;
-
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private TeacherDto mapToDto(Teacher teacher) {
         return TeacherDto.builder()
+                   .id (teacher.getId())
                 .userId(teacher.getId())
                 .firstName(teacher.getFirstName())
                 .lastName(teacher.getLastName())
@@ -34,24 +39,47 @@ public class TeacherServiceImpl implements TeacherService {
                 .qualification(teacher.getQualification())
                 .experienceYears(teacher.getExperienceYears())
                 .gender(teacher.getGender())
-                //.assignedClasses(teacher.getAssignedClasses())
                 .dateOfBirth(teacher.getDateOfBirth())
-
+                .classIds(teacher.getAssignedClass() != null
+                        ? teacher.getAssignedClass().stream().map(SchoolClass::getClassId).toList()
+                        : List.of())
+                .classNames(teacher.getAssignedClass() != null
+                        ? teacher.getAssignedClass().stream().map(SchoolClass::getClassName).toList()
+                        : List.of())
+                .sectionIds(teacher.getAssignedSection() != null
+                        ? teacher.getAssignedSection().stream().map(Section::getSectionId).toList()
+                        : List.of())
+                .sectionNames(teacher.getAssignedSection() != null
+                        ? teacher.getAssignedSection().stream().map(Section::getSectionName).toList()
+                        : List.of())
                 .build();
     }
 
-//    @Override
-//    public TeacherDto createTeacher(Teacher teacher)
-//    {
-//        return mapToDto(teacherRepository.save(teacher));
-//    }
+    // Map Teacher entity to AssignedTeacherResponse
+    public AssignedTeacherResponse mapToAssignedResponse(Teacher teacher) {
+        return AssignedTeacherResponse.builder()
+                .id(teacher.getId())
+                .teacherId(teacher.getId())
+                .firstName(teacher.getFirstName())
+                .lastName(teacher.getLastName())
+                .email(teacher.getEmail())
+                .classId(!teacher.getAssignedClass().isEmpty() ? teacher.getAssignedClass().get(0).getClassId() : null)
+                .className(!teacher.getAssignedClass().isEmpty() ?
+                        teacher.getAssignedClass().stream().map(SchoolClass::getClassName).toList() : List.of())
+                .sectionId(!teacher.getAssignedSection().isEmpty() ? teacher.getAssignedSection().get(0).getSectionId() : null)
+                .sectionName(!teacher.getAssignedSection().isEmpty() ?
+                        teacher.getAssignedSection().stream().map(Section::getSectionName).toList() : List.of())
+                .assignedAt(teacher.getAssignedAt())
+                .build();
+    }
 
-//    @Override
-//    public TeacherDto createTeacher(CreateTeacherRequest.TeacherCreateRequest teacher) {
-//        return null;
-//    }
-
-
+    // Fetch all teachers
+    public List<AssignedTeacherResponse> getAllAssignedTeachers() {
+        return teacherRepository.findAll()
+                .stream()
+                .map(this::mapToAssignedResponse)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public TeacherDto getTeacherById(Long id) {
@@ -80,7 +108,6 @@ public class TeacherServiceImpl implements TeacherService {
         existing.setQualification(teacher.getQualification());
         existing.setExperienceYears(teacher.getExperienceYears());
         existing.setGender(teacher.getGender());
-      //  existing.setAssignedClasses(teacher.getAssignedClasses());
         existing.setDateOfBirth(teacher.getDateOfBirth());
 
         return mapToDto(teacherRepository.save(existing));
@@ -92,104 +119,58 @@ public class TeacherServiceImpl implements TeacherService {
         return "Teacher with ID " + id + " has been successfully deleted.";
     }
 
-
-//    @Override
-//    public AssignedTeacherResponse assignTeacher(Long classId, Long sectionId, AssignTeacherRequest request) {
-//        // check class, section, teacher exist
-//        SchoolClass schoolClass = classRepository.findById(classId)
-//                .orElseThrow(() -> new RuntimeException("Class not found"));
-//
-//        Section section = sectionRepository.findById(sectionId)
-//                .orElseThrow(() -> new RuntimeException("Section not found"));
-//
-//        Teacher teacher = teacherRepository.findById(request.getTeacherId())
-//                .orElseThrow(() -> new RuntimeException("Teacher not found"));
-//
-//        // prevent duplicate mapping
-//        if (classTeacherRepository.existsByClassIdAndSectionIdAndTeacherId(classId, sectionId, teacher.getId())) {
-//            throw new RuntimeException("Teacher already assigned to this class and section");
-//        }
-//
-//        ClassTeacher mapping = ClassTeacher.builder()
-//                .classId(classId)
-//                .sectionId(sectionId)
-//                .teacher(teacher) // set Teacher entity
-//                .build();
-//
-//        classTeacherRepository.save(mapping); // JPA will persist teacher_id foreign key automatically
-//
-//        return AssignedTeacherResponse.builder()
-//                .id(mapping.getId())
-//                .classId(classId)
-//                .className(schoolClass.getClassName())
-//                .sectionId(sectionId)
-//                .sectionName(section.getSectionName())
-//                .teacherId(mapping.getTeacher().getId())
-//                .teacherName(mapping.getTeacher().getFirstName() + " " + mapping.getTeacher().getLastName())
-//                .assignedAt(mapping.getAssignedAt())
-//                .build();
-//
-//    }
-//
-//    @Override
-//    public List<AssignedTeacherResponse> getAssignedTeachers(Long classId) {
-//        SchoolClass schoolClass = classRepository.findById(classId)
-//                .orElseThrow(() -> new RuntimeException("Class not found"));
-//
-//        return classTeacherRepository.findByClassId(classId).stream().map(mapping -> {
-//            Section section = sectionRepository.findById(mapping.getSectionId()).orElse(null);
-//            Teacher teacher = mapping.getTeacher(); // use the entity
-//
-//            return AssignedTeacherResponse.builder()
-//                    .id(mapping.getId())
-//                    .classId(classId)
-//                    .className(schoolClass.getClassName())
-//                    .sectionId(mapping.getSectionId())
-//                    .sectionName(section != null ? section.getSectionName() : null)
-//                    .teacherId(teacher != null ? teacher.getId() : null)   // ✅ fix here
-//                    .teacherName(teacher != null ? teacher.getFirstName() + " " + teacher.getLastName() : null) // ✅ fix here
-//                    .assignedAt(mapping.getAssignedAt())
-//                    .build();
-//        }).collect(Collectors.toList());
-//    }
-//
-
-    /// /teacher view
-//    @Override
-//    public List<AssignedTeacherResponse> getAssignedClassesForTeacher(Long teacherId) {
-//        List<ClassTeacher> assignments = classTeacherRepository.findByTeacherId(teacherId);
-//
-//        return assignments.stream().map(mapping -> {
-//            SchoolClass schoolClass = classRepository.findById(mapping.getClassId()).orElse(null);
-//            Section section = sectionRepository.findById(mapping.getSectionId()).orElse(null);
-//            Teacher teacher = mapping.getTeacher(); // fetch teacher entity
-//
-//            return AssignedTeacherResponse.builder()
-//                    .id(mapping.getId())
-//                    .classId(mapping.getClassId())
-//                    .className(schoolClass != null ? schoolClass.getClassName() : null)
-//                    .sectionId(mapping.getSectionId())
-//                    .sectionName(section != null ? section.getSectionName() : null)
-//                    .teacherId(teacher != null ? teacher.getId() : null) // set teacherId
-//                    .teacherName(teacher != null ? teacher.getFirstName() + " " + teacher.getLastName() : null) // set teacherName
-//                    .assignedAt(mapping.getAssignedAt())
-//                    .build();
-//        }).collect(Collectors.toList());
-//    }
-//    @Override
-//    public Teacher getTeacherByUsername(String username) {
-//        return teacherRepository.findByUserUsername(username)
-//                .orElseThrow(() -> new RuntimeException("Teacher not found with username: " + username));
-//    }
     @Override
-    public Teacher createTeacher(TeacherCreateRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public AssignedTeacherResponse assignTeacher(Long classId, Long sectionId, AssignTeacherRequest request) {
+        Teacher teacher = teacherRepository.findById(request.getTeacherId())
+                .orElseThrow(() -> new EntityNotFoundException("Teacher not found with ID: " + request.getTeacherId()));
 
-        List<SchoolClass> schoolClasses = classRepository.findAllById(request.getAssignedClassIds());
-        List<Section> sections = sectionRepository.findAllById(request.getAssignedSectionIds());
-        List<Student> students = studentRepository.findAllById(request.getStudentIds());
+        SchoolClass schoolClass = classRepository.findById(classId)
+                .orElseThrow(() -> new EntityNotFoundException("Class not found with ID: " + classId));
 
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Section not found with ID: " + sectionId));
+
+        // ✅ Add to ManyToMany lists
+        teacher.getAssignedClass().add(schoolClass);
+        teacher.getAssignedSection().add(section);
+        teacher.setAssignedAt(LocalDateTime.now());
+        teacherRepository.save(teacher);
+
+        return mapToAssignedResponse(teacher);
+    }
+
+    @Override
+    public List<AssignedTeacherResponse> getAssignedTeachers(Long classId) {
+        SchoolClass schoolClass = classRepository.findById(classId)
+                .orElseThrow(() -> new EntityNotFoundException("Class not found with ID: " + classId));
+
+        return schoolClass.getSections().stream()
+                .flatMap(section -> section.getTeachers().stream()
+                        .map(this::mapToAssignedResponse))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AssignedTeacherResponse> getAssignedClassesForTeacher(Long teacherId) {
+        Teacher teacher = teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new EntityNotFoundException("Teacher not found with ID: " + teacherId));
+
+        return List.of(mapToAssignedResponse(teacher));
+    }
+
+    @Override
+    public Teacher getTeacherByUsername(String username) {
+        return teacherRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Teacher not found with username: " + username));
+    }
+
+    @Override
+    public TeacherDto createTeacher(TeacherCreateRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getEmail()));
+        // Build Teacher entity
         Teacher teacher = Teacher.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -200,14 +181,28 @@ public class TeacherServiceImpl implements TeacherService {
                 .gender(request.getGender())
                 .dateOfBirth(request.getDateOfBirth())
                 .user(user)
-                .assignedClass(schoolClasses)
-                .assignedSection(sections)
-                .student(students)
+                .assignedAt(LocalDateTime.now())
                 .build();
 
-        return teacherRepository.save(teacher);
+        // Assign Classes
+        if (request.getAssignedClassIds() != null && !request.getAssignedClassIds().isEmpty()) {
+            List<SchoolClass> classes = classRepository.findAllById(request.getAssignedClassIds());
+            teacher.getAssignedClass().addAll(classes);
+        }
+
+        // Assign Sections
+        if (request.getAssignedSectionIds() != null && !request.getAssignedSectionIds().isEmpty()) {
+            List<Section> sections = sectionRepository.findAllById(request.getAssignedSectionIds());
+            teacher.getAssignedSection().addAll(sections);
+        }
+
+        // Save teacher (ID will be generated here)
+        Teacher savedTeacher = teacherRepository.save(teacher);
+        System.out.println("Saved Teacher ID: " + savedTeacher.getId()); // ✅ Debug: confirm ID
+
+        // Convert to DTO
+        return mapToDto(savedTeacher);
     }
 
 }
-
 

@@ -1,9 +1,6 @@
 package com.digital.serviceimpl;
 
-import com.digital.dto.EnrollmentRequest;
-import com.digital.dto.StudentRequest;
-import com.digital.dto.StudentResponse;
-import com.digital.dto.DashboardResponse;
+import com.digital.dto.*;
 import com.digital.entity.SchoolClass;
 import com.digital.entity.Section;
 import com.digital.entity.Student;
@@ -64,7 +61,7 @@ public class StudentServiceImpl implements StudentService {
 
 
 
-User user = userRepository.findByEmail(request.getEmail())
+
 
             User user = userRepository.findByEmail(request.getEmail())
 
@@ -222,7 +219,7 @@ User user = userRepository.findByEmail(request.getEmail())
 
 
     @Override
-    public StudentResponse enrollStudent(Long studentId, EnrollmentRequest request) {
+    public StudentCreateResponse enrollStudent(Long studentId, EnrollmentRequest request) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + studentId));
 
@@ -243,7 +240,7 @@ User user = userRepository.findByEmail(request.getEmail())
         studentRepository.save(student);
 
         // ✅ map using DTO factory method
-        return StudentResponse.fromEntity(student);
+        return StudentCreateResponse.fromEntity(student);
     }
 
 
