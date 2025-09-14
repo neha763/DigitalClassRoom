@@ -7,11 +7,7 @@ import com.digital.entity.Student;
 import com.digital.entity.User;
 
 
-import com.digital.exception.ResourceNotFoundException;
-
-import com.digital.enums.Role;
-import com.digital.enums.Status;
-
+import com.digital.exception.StudentNotFoundException;
 import com.digital.repository.ClassRepository;
 import com.digital.repository.SectionRepository;
 
@@ -22,7 +18,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -44,63 +40,43 @@ public class StudentServiceImpl implements StudentService {
 
 
 
+
+
     @Override
-
     public StudentResponse createStudent(StudentRequest request) {
-        try {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getUserId()));
 
+        SchoolClass schoolClass = classRepository.findById(request.getClassId())
+                .orElseThrow(() -> new RuntimeException("Class not found with ID: " + request.getClassId()));
 
-            // ✅ Create User for Student
-//            User user = User.builder()
-//                    .username(request.getEmail())  // ✅ use email as username
-//                    .email(request.getEmail())
-//                    .password(passwordEncoder.encode("Default@123")) // default password
-//                    .role(Role.STUDENT) // assign student role
-//                    .build();
+        Section section = sectionRepository.findById(request.getSectionId())
+                .orElseThrow(() -> new RuntimeException("Section not found with ID: " + request.getSectionId()));
 
+        Student student = Student.builder()
+                .user(user)   // 🔑 link User <-> Student
+                .rollNumber(request.getRollNumber())
+                .firstName(request.getFirstName())
+                .middleName(request.getMiddleName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .mobileNumber(request.getMobileNumber())
+                .dateOfBirth(request.getDateOfBirth())
+                .gender(request.getGender())
+                .street(request.getStreet())
+                .city(request.getCity())
+                .state(request.getState())
+                .country(request.getCountry())
+                .pinCode(request.getPinCode())
+                .schoolClass(schoolClass)
+                .section(section)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
 
-
-
-
-
-            User user = userRepository.findByEmail(request.getEmail())
-
-        .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getEmail()));
-            // ✅ Fetch SchoolClass and Section entities
-            SchoolClass schoolClass = classRepository.findById(request.getClassId())
-                    .orElseThrow(() -> new RuntimeException("Class not found with ID: " + request.getClassId()));
-
-            Section section = sectionRepository.findById(request.getSectionId())
-                    .orElseThrow(() -> new RuntimeException("Section not found with ID: " + request.getSectionId()));
-
-
-            // ✅ Create Student
-            Student student = Student.builder()
-                    .user(user) // cascade will persist user
-                    .rollNumber(request.getRollNumber())
-                    .firstName(request.getFirstName())
-                    .middleName(request.getMiddleName())
-                    .lastName(request.getLastName())
-                    .email(request.getEmail())
-                    .mobileNumber(request.getMobileNumber())
-                    .dateOfBirth(request.getDateOfBirth())
-                    .gender(request.getGender())
-                    .street(request.getStreet())
-                    .city(request.getCity())
-                    .state(request.getState())
-                    .country(request.getCountry())
-                    .pinCode(request.getPinCode())
-                    .schoolClass(schoolClass)   // now defined
-                    .section(section)           // now defined
-                    .build();
-
-            Student saved = studentRepository.save(student);
-            return StudentResponse.fromEntity(saved);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create student: " + e.getMessage(), e);
-        }
+        return StudentResponse.fromEntity(studentRepository.save(student));
     }
+
 
     @Override
     public StudentResponse updateStudent(Long studentId, StudentRequest request) {
@@ -232,7 +208,6 @@ public class StudentServiceImpl implements StudentService {
         student.setSchoolClass(schoolClass);
         student.setSection(section);
 
-        // ✅ set enrolledAt timestamp
         if (student.getEnrolledAt() == null) {
             student.setEnrolledAt(LocalDateTime.now());
         }
@@ -335,5 +310,65 @@ public StudentResponse getStudentClassDetails(Long studentId) {
         return studentRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Student not found for user: " + username));
     }
+    @Override
+    public StudentResponse getMyProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return getMyProfile(username);
+    }
+
+    @Override
+    public StudentResponse getMyProfile(String username) {
+        Student student = studentRepository.findByUserUsername(username)
+                .orElseThrow(() -> new StudentNotFoundException(
+                        "Student not found for username: " + username
+                ));
+        return toResponse(student);
+    }
+
+    @Override
+    public StudentResponse updateMyProfile(StudentProfileUpdateRequest request) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Student student = studentRepository.findByUserUsername(username)
+                .orElseThrow(() -> new StudentNotFoundException(
+                        "Student not found for username: " + username
+                ));
+
+        student.setEmail(request.getEmail());
+        student.setMobileNumber(request.getMobileNumber());
+        student.setStreet(request.getStreet());
+        student.setCity(request.getCity());
+        student.setState(request.getState());
+        student.setCountry(request.getCountry());
+        student.setPinCode(request.getPinCode());
+        student.setUpdatedAt(LocalDateTime.now());
+
+        return toResponse(studentRepository.save(student));
+    }
+
+//    @Override
+//    public Optional<Student> findByUserUsername(String username) {
+//        return Optional.empty();
+//    }
+
+
+
+
+    public Student getCurrentStudent(String username) {
+        return studentRepository.findByUserUsername(username)
+                .orElseThrow(() -> new StudentNotFoundException(
+                        "No student profile linked with username: " + username
+                ));
+    }
+    @Override
+    public Optional<Student> findByUserUsername(String username) {
+        return studentRepository.findByUserUsername(username);
+    }
+
+    @Override
+    public Optional<Student> findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .flatMap(studentRepository::findByUser);
+    }
+
 
 }
