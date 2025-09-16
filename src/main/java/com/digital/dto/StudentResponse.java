@@ -23,31 +23,20 @@ public class StudentResponse {
     private String mobileNumber;
     private LocalDate dateOfBirth;
     private String gender;
-
-    // Address
     private String street;
     private String city;
     private String state;
     private String country;
     private String pinCode;
-
-    // Class & Section
     private Long classId;
     private String className;
     private Long sectionId;
     private String sectionName;
     private LocalDateTime enrolledAt;
-
-
-
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // username from User entity (optional but useful)
     private String username;
-
-    // Factory method to map from entity
     public static StudentResponse fromEntity(Student student) {
         return StudentResponse.builder()
                 .studentRegId(student.getStudentRegId())
@@ -64,7 +53,6 @@ public class StudentResponse {
                 .state(student.getState())
                 .country(student.getCountry())
                 .pinCode(student.getPinCode())
-                // Get IDs and Names from relationships
                 .classId(student.getSchoolClass() != null ? student.getSchoolClass().getClassId() : null)
                 .className(student.getSchoolClass() != null ? student.getSchoolClass().getClassName() : null)
                 .sectionId(student.getSection() != null ? student.getSection().getSectionId() : null)

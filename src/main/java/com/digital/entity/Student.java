@@ -1,5 +1,6 @@
 package com.digital.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -19,6 +20,7 @@ public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studentRegId;
+
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
@@ -68,45 +70,18 @@ public class Student {
 
     @Pattern(regexp = "^[0-9]{5,10}$")
     private String pinCode;
-
-    // Relationships
-//    @ManyToOne(fetch = FetchType.LAZY)
-//   @JoinColumn(name = "class_id", nullable = false)
-////    @JoinColumn( nullable = false)
-//    private SchoolClass schoolClass;
-//
-//    @ManyToOne(fetch = FetchType.LAZY)
-//   @JoinColumn(name = "section_id", nullable = false)
-////    @JoinColumn( nullable = false)
-
-
     @ManyToOne
     @JoinColumn(name = "class_id")
     private SchoolClass schoolClass;
-
     @ManyToOne
     @JoinColumn(name = "section_id")
     private Section section;
-    // ✅ New field for enrollment timestamp
     private LocalDateTime enrolledAt;
-
-
-    // Getters, setters, etc.
-
-
-//    private Section section;
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-//    @PrePersist
-//    public void onCreate() {
-//        this.createdAt = LocalDateTime.now();
-//        this.updatedAt = LocalDateTime.now(); // set updatedAt initially same as createdAt
-//    }
-
-//    @PreUpdate
-//    public void onUpdate() {
-//        this.updatedAt = LocalDateTime.now();
-//    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id")
+    @JsonIgnore
+    private Teacher teacher;
 }
