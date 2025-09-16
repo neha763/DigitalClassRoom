@@ -7,15 +7,13 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice   // sirf Student related exceptions ko catch karega
+@RestControllerAdvice
 public class StudentExceptionHandler {
 
-    // 🟢 Validation Errors (Student entity ke annotations fail hone par)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, Object> response = new HashMap<>();
@@ -32,7 +30,6 @@ public class StudentExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    // 🟢 Duplicate entry (rollNumber, email, userId unique violation)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> handleDuplicateEntry(DataIntegrityViolationException ex) {
         Map<String, Object> response = new HashMap<>();
@@ -54,7 +51,6 @@ public class StudentExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
-    // 🟢 Student not found
     @ExceptionHandler(StudentNotFoundException.class)
     public ResponseEntity<?> handleStudentNotFound(StudentNotFoundException ex) {
         Map<String, Object> response = new HashMap<>();

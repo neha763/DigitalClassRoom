@@ -50,7 +50,6 @@ public class StudentCreateResponse {
                 .state(student.getState())
                 .country(student.getCountry())
                 .pinCode(student.getPinCode())
-                // Get IDs and Names from relationships
                 .classId(student.getSchoolClass() != null ? student.getSchoolClass().getClassId() : null)
                 .className(student.getSchoolClass() != null ? student.getSchoolClass().getClassName() : null)
                 .sectionId(student.getSection() != null ? student.getSection().getSectionId() : null)

@@ -1,16 +1,12 @@
 package com.digital.serviceimpl;
-
 import com.digital.dto.*;
 import com.digital.entity.SchoolClass;
 import com.digital.entity.Section;
 import com.digital.entity.Student;
 import com.digital.entity.User;
-
-
 import com.digital.exception.StudentNotFoundException;
 import com.digital.repository.ClassRepository;
 import com.digital.repository.SectionRepository;
-
 import com.digital.repository.StudentRepository;
 import com.digital.repository.UserRepository;
 import com.digital.servicei.StudentService;
@@ -32,15 +28,9 @@ public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
-    //private final PasswordEncoder passwordEncoder; // <-- injected here
-
-
+    //private final PasswordEncoder passwordEncoder;
     private final ClassRepository classRepository;
     private final SectionRepository sectionRepository;
-
-
-
-
 
     @Override
     public StudentResponse createStudent(StudentRequest request) {
@@ -97,7 +87,6 @@ public class StudentServiceImpl implements StudentService {
         student.setCountry(request.getCountry());
         student.setPinCode(request.getPinCode());
 
-        // Fetch and set class & section entities
         SchoolClass schoolClass = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new RuntimeException("Class not found with ID: " + request.getClassId()));
         Section section = sectionRepository.findById(request.getSectionId())
@@ -211,14 +200,9 @@ public class StudentServiceImpl implements StudentService {
         if (student.getEnrolledAt() == null) {
             student.setEnrolledAt(LocalDateTime.now());
         }
-
         studentRepository.save(student);
-
-        // ✅ map using DTO factory method
         return StudentCreateResponse.fromEntity(student);
     }
-
-
 
     @Override
     public List<StudentResponse> getStudentsByClass(Long classId, Long sectionId) {
@@ -257,19 +241,7 @@ public class StudentServiceImpl implements StudentService {
                 .build();
     }
 
-//    @Override
-//    public StudentResponse getStudentClassDetails(Long studentId) {
-//        Student student = studentRepository.findById(studentId)
-//                .orElseThrow(() -> new RuntimeException("Student not found"));
-//
-//        return StudentResponse.builder()
-//                .classId(student.getSchoolClass().getClassId())
-//                .className(student.getSchoolClass().getClassName())
-//                .sectionId(student.getSection().getSectionId())
-//                .sectionName(student.getSection().getSectionName())
-//                .enrolledAt(student.getCreatedAt())
-//                .build();
-//    }
+
 @Override
 public StudentResponse getStudentClassDetails(Long studentId) {
     Student student = studentRepository.findById(studentId)
@@ -344,15 +316,6 @@ public StudentResponse getStudentClassDetails(Long studentId) {
 
         return toResponse(studentRepository.save(student));
     }
-
-//    @Override
-//    public Optional<Student> findByUserUsername(String username) {
-//        return Optional.empty();
-//    }
-
-
-
-
     public Student getCurrentStudent(String username) {
         return studentRepository.findByUserUsername(username)
                 .orElseThrow(() -> new StudentNotFoundException(

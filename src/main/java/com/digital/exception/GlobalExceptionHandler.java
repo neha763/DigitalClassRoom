@@ -15,7 +15,6 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 🔴 Resource not found
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<CustomResponse> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
         CustomResponse response = new CustomResponse(
@@ -54,7 +53,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
-    // 🔴 Student not found (very important!)
     @ExceptionHandler(StudentNotFoundException.class)
     public ResponseEntity<CustomResponse> handleStudentNotFound(StudentNotFoundException ex, HttpServletRequest request) {
         CustomResponse response = new CustomResponse(
@@ -80,7 +78,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
-    // 🔴 Validation Errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -90,7 +87,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    // 🔴 Catch all generic errors
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CustomResponse> handleGenericException(Exception ex, HttpServletRequest request) {
         CustomResponse response = new CustomResponse(

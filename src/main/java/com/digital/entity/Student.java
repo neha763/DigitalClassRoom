@@ -79,8 +79,9 @@ public class Student {
     private LocalDateTime enrolledAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "teacher_id")
-@JsonIgnore
-private Teacher teacher;
+    @JoinColumn(name = "teacher_id")
+    @JsonIgnore
+    private Teacher teacher;
 }
