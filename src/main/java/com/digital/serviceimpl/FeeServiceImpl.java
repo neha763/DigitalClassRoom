@@ -64,7 +64,6 @@ public class FeeServiceImpl implements FeeService {
         repo.delete(existing);
     }
 
-    // ------------------- Mapping Helpers -------------------
 
     private FeeStructure toEntity(FeeStructureDTO dto) {
         FeeStructure fs = new FeeStructure();

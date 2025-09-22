@@ -67,7 +67,6 @@ public class Payment {
     @PrePersist
     public void prePersist() {
         if (this.transactionId == null || this.transactionId.trim().isEmpty()) {
-            // generate UUID transaction id by default; override if you want a custom txn
             this.transactionId = "txn_" + UUID.randomUUID().toString();
         }
         if (this.paymentDate == null) {

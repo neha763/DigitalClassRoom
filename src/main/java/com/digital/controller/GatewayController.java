@@ -4,6 +4,7 @@ import com.digital.dto.GatewayResponseDTO;
 import com.digital.servicei.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -20,44 +21,51 @@ public class GatewayController {
         this.paymentService = paymentService;
     }
 
-    // POST /gateway/create-order → Mock order creation
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create-order")
     public ResponseEntity<Map<String, String>> createOrder(
             @RequestParam Long invoiceId,
             @RequestParam Double amount) {
+
         Map<String, String> response = new HashMap<>();
-        response.put("orderId", "order_" + UUID.randomUUID());
-        response.put("amount", amount.toString());
-        response.put("upiLink", "upi://pay?orderId=" + response.get("orderId"));
+        String orderId = "order_" + UUID.randomUUID();
+
+        response.put("orderId", orderId);
+        response.put("amount", String.valueOf(amount));
+        response.put("upiLink", "upi://pay?orderId=" + orderId);
+
         return ResponseEntity.ok(response);
     }
 
-    // POST /gateway/callback → Mock payment callback
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/callback")
     public ResponseEntity<GatewayResponseDTO> paymentCallback(
             @Valid @RequestBody GatewayResponseDTO response) {
-        return ResponseEntity.ok(paymentService.processGatewayCallback(response));
+        GatewayResponseDTO processed = paymentService.processGatewayCallback(response);
+        return ResponseEntity.ok(processed);
     }
 
-    // PUT /gateway/update-order → Mock update of order (amount, expiry, etc.)
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update-order/{orderId}")
     public ResponseEntity<Map<String, String>> updateOrder(
             @PathVariable String orderId,
             @RequestParam(required = false) Double newAmount,
             @RequestParam(required = false) String status) {
+
         Map<String, String> response = new HashMap<>();
         response.put("orderId", orderId);
         if (newAmount != null) {
-            response.put("newAmount", newAmount.toString());
+            response.put("newAmount", String.valueOf(newAmount));
         }
         if (status != null) {
             response.put("status", status);
         }
         response.put("message", "Order updated successfully (mock).");
+
         return ResponseEntity.ok(response);
     }
 
-    // DELETE /gateway/{orderId} → Mock cancel order
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{orderId}")
     public ResponseEntity<Map<String, String>> cancelOrder(@PathVariable String orderId) {
         Map<String, String> response = new HashMap<>();

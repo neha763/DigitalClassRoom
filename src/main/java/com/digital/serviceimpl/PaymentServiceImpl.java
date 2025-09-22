@@ -115,7 +115,6 @@ public class PaymentServiceImpl implements PaymentService {
 
         paymentRepo.delete(payment);
 
-        // Optional: adjust invoice balance if the deleted payment was SUCCESS
         if (payment.getStatus() == PaymentStatus.SUCCESS) {
             Invoice inv = invoiceRepo.findById(payment.getInvoiceId())
                     .orElseThrow(() -> new RuntimeException("Invoice not found"));

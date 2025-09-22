@@ -50,7 +50,6 @@ public class Invoice {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    // Optional: store amount paid so far for quick reads (must be kept in sync by services)
     @NotNull
     @DecimalMin(value = "0.00", inclusive = true)
     @Column(name = "amount_paid", nullable = false, precision = 14, scale = 2)
@@ -72,10 +71,7 @@ public class Invoice {
         this.updatedAt = Instant.now();
     }
 
-    /**
-     * Call this from the service layer after any payment changes.
-     * This method recomputes status using totalDue and amountPaid and dueDate.
-     */
+
     public void recomputeStatus() {
         if (amountPaid == null) amountPaid = BigDecimal.ZERO;
         if (totalDue == null) totalDue = BigDecimal.ZERO;
@@ -83,12 +79,10 @@ public class Invoice {
         int cmp = amountPaid.compareTo(totalDue);
         if (cmp >= 0) {
             this.status = InvoiceStatus.PAID;
-            // cap paid to totalDue to avoid floating mismatch
             this.amountPaid = totalDue;
         } else if (amountPaid.compareTo(BigDecimal.ZERO) > 0) {
             this.status = InvoiceStatus.PARTIALLY_PAID;
         } else {
-            // no payment
             if (dueDate != null && dueDate.isBefore(LocalDate.now())) {
                 this.status = InvoiceStatus.OVERDUE;
             } else {

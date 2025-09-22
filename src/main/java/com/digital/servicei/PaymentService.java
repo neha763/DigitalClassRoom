@@ -10,11 +10,8 @@ public interface PaymentService {
     List<PaymentDTO> getPaymentsByStudent(Long studentId);
     GatewayResponseDTO processGatewayCallback(GatewayResponseDTO response);
 
-    // 🔹 New method: update payment (e.g., refund, adjust)
     PaymentDTO updatePayment(Long paymentId, PaymentDTO dto);
 
-    // 🔹 New method: delete payment (admin only in real system)
     void deletePayment(Long paymentId);
 
-    //GatewayResponseDTO processGatewayCallback(GatewayResponseDTO response);
 }

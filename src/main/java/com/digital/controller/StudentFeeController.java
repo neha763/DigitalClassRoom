@@ -8,6 +8,7 @@ import com.digital.servicei.InvoiceService;
 import com.digital.servicei.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,43 +27,37 @@ public class StudentFeeController {
         this.paymentService = paymentService;
     }
 
-    // ================= Fee Structure =================
-
-    // GET /student/fees → View All Fee Structures
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/fees")
     public ResponseEntity<List<FeeStructureDTO>> getAllFeeStructures() {
         return ResponseEntity.ok(feeService.getAllFeeStructures());
     }
 
-    // ================= Invoices =================
-
-    // GET /student/invoices → View Student Invoices
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/invoices")
     public ResponseEntity<List<InvoiceDTO>> getInvoices(@RequestParam Long studentId) {
         return ResponseEntity.ok(invoiceService.getInvoicesByStudent(studentId));
     }
 
-    // GET /student/invoices/{id}/receipt → Download Receipt (for now return InvoiceDTO)
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/invoices/{id}/receipt")
     public ResponseEntity<InvoiceDTO> getReceipt(@PathVariable Long id) {
         return ResponseEntity.ok(invoiceService.getInvoice(id));
     }
 
-    // ================= Payments =================
-
-    // POST /student/payments → Pay Invoice
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/payments")
     public ResponseEntity<PaymentDTO> makePayment(@Valid @RequestBody PaymentDTO dto) {
         return ResponseEntity.ok(paymentService.makePayment(dto));
     }
 
-    // GET /student/payments/history → View Past Payments
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/payments/history")
     public ResponseEntity<List<PaymentDTO>> getPaymentHistory(@RequestParam Long studentId) {
         return ResponseEntity.ok(paymentService.getPaymentsByStudent(studentId));
     }
 
-    // PUT /student/payments/{id} → Update Payment (e.g., change payment mode or status)
+    @PreAuthorize("hasRole('STUDENT')")
     @PutMapping("/payments/{id}")
     public ResponseEntity<PaymentDTO> updatePayment(
             @PathVariable Long id,
@@ -70,7 +65,7 @@ public class StudentFeeController {
         return ResponseEntity.ok(paymentService.updatePayment(id, dto));
     }
 
-    // DELETE /student/payments/{id} → Cancel/Delete Payment
+    @PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("/payments/{id}")
     public ResponseEntity<Void> deletePayment(@PathVariable Long id) {
         paymentService.deletePayment(id);

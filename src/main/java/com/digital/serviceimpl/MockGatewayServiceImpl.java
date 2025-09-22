@@ -11,7 +11,6 @@ import java.util.UUID;
 @Service
 public class MockGatewayServiceImpl implements MockGatewayService {
 
-    // simple in-memory orders storage
     private final Map<String, Map<String, Object>> orders = new HashMap<>();
 
     @Override

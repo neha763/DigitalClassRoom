@@ -34,7 +34,6 @@ public class InvoiceDTO {
     @DecimalMin(value = "0.00", inclusive = true, message = "Amount paid cannot be negative")
     private BigDecimal amountPaid = BigDecimal.ZERO;
 
-    // Getters and Setters
     public Long getInvoiceId() { return invoiceId; }
     public void setInvoiceId(Long invoiceId) { this.invoiceId = invoiceId; }
 

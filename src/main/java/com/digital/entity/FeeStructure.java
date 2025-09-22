@@ -50,7 +50,6 @@ public class FeeStructure {
     @Column(name = "other_charges", nullable = false, precision = 12, scale = 2)
     private BigDecimal otherCharges = BigDecimal.ZERO;
 
-    // computed field - sum of above
     @NotNull
     @DecimalMin(value = "0.00", inclusive = true)
     @Column(name = "total_amount", nullable = false, precision = 14, scale = 2)

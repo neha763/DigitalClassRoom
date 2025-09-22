@@ -46,6 +46,5 @@ public class PaymentDTO {
     )
     private String status; // SUCCESS, FAILED, PENDING, REFUNDED
 
-    @Size(max = 500, message = "Notes cannot exceed 500 characters")
-    private String notes; // optional notes about payment
+
 }

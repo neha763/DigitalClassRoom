@@ -1,12 +1,14 @@
 package com.digital.controller;
 
-import com.digital.dto.GatewayResponseDTO;
 import com.digital.dto.PaymentDTO;
 import com.digital.servicei.MockGatewayService;
 import com.digital.servicei.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/payment")
@@ -20,20 +22,21 @@ public class PaymentController {
         this.mockGatewayService = mockGatewayService;
     }
 
-    // For direct payments (cash/card/upi)
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/pay")
     public ResponseEntity<PaymentDTO> pay(@Valid @RequestBody PaymentDTO dto) {
         PaymentDTO p = paymentService.makePayment(dto);
         return ResponseEntity.status(201).body(p);
     }
 
-    // Get payments by student
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<?> byStudent(@PathVariable Long studentId) {
-        return ResponseEntity.ok(paymentService.getPaymentsByStudent(studentId));
+    public ResponseEntity<List<PaymentDTO>> byStudent(@PathVariable Long studentId) {
+        List<PaymentDTO> payments = paymentService.getPaymentsByStudent(studentId);
+        return ResponseEntity.ok(payments);
     }
 
-    // PUT /api/payment/{paymentId} → update payment (e.g., refund, adjust)
+    @PreAuthorize("hasRole('STUDENT')")
     @PutMapping("/{paymentId}")
     public ResponseEntity<PaymentDTO> updatePayment(
             @PathVariable Long paymentId,
@@ -42,7 +45,7 @@ public class PaymentController {
         return ResponseEntity.ok(updated);
     }
 
-    // DELETE /api/payment/{paymentId} → delete/cancel payment
+    @PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("/{paymentId}")
     public ResponseEntity<String> deletePayment(@PathVariable Long paymentId) {
         paymentService.deletePayment(paymentId);
