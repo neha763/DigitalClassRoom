@@ -15,69 +15,37 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    // ---------------- Resource Not Found ----------------
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<CustomResponse> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
-        CustomResponse response = new CustomResponse(
-                LocalDateTime.now(),
-                HttpStatus.NOT_FOUND,
-                HttpStatus.NOT_FOUND.value(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
     }
 
-    // 🔴 Unauthorized
-    @ExceptionHandler(CustomUnauthorizedException.class)
-    public ResponseEntity<CustomResponse> handleUnauthorized(CustomUnauthorizedException ex, HttpServletRequest request) {
-        CustomResponse response = new CustomResponse(
-                LocalDateTime.now(),
-                HttpStatus.UNAUTHORIZED,
-                HttpStatus.UNAUTHORIZED.value(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-    }
-
-    // 🔴 Forbidden
-    @ExceptionHandler(CustomForbiddenException.class)
-    public ResponseEntity<CustomResponse> handleForbidden(CustomForbiddenException ex, HttpServletRequest request) {
-        CustomResponse response = new CustomResponse(
-                LocalDateTime.now(),
-                HttpStatus.FORBIDDEN,
-                HttpStatus.FORBIDDEN.value(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-    }
-
-    @ExceptionHandler(StudentNotFoundException.class)
-    public ResponseEntity<CustomResponse> handleStudentNotFound(StudentNotFoundException ex, HttpServletRequest request) {
-        CustomResponse response = new CustomResponse(
-                LocalDateTime.now(),
-                HttpStatus.NOT_FOUND,
-                HttpStatus.NOT_FOUND.value(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    }
-
-    // 🔴 Duplicate resource
+    // ---------------- Duplicate Resource ----------------
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<CustomResponse> handleDuplicateResource(DuplicateResourceException ex, HttpServletRequest request) {
-        CustomResponse response = new CustomResponse(
-                LocalDateTime.now(),
-                HttpStatus.CONFLICT,
-                HttpStatus.CONFLICT.value(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
     }
 
+    // ---------------- Unauthorized ----------------
+    @ExceptionHandler(CustomUnauthorizedException.class)
+    public ResponseEntity<CustomResponse> handleUnauthorized(CustomUnauthorizedException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI());
+    }
+
+    // ---------------- Forbidden ----------------
+    @ExceptionHandler(CustomForbiddenException.class)
+    public ResponseEntity<CustomResponse> handleForbidden(CustomForbiddenException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI());
+    }
+
+    // ---------------- Payment Errors ----------------
+    @ExceptionHandler({PaymentException.class, InvalidPaymentException.class})
+    public ResponseEntity<CustomResponse> handlePaymentExceptions(RuntimeException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
+    // ---------------- Validation Errors ----------------
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -87,15 +55,21 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
+    // ---------------- Generic / Unexpected Errors ----------------
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CustomResponse> handleGenericException(Exception ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage() != null ? ex.getMessage() : "Internal server error", request.getRequestURI());
+    }
+
+    // ---------------- Helper Method ----------------
+    private ResponseEntity<CustomResponse> buildResponse(HttpStatus status, String message, String path) {
         CustomResponse response = new CustomResponse(
                 LocalDateTime.now(),
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                ex.getMessage() != null ? ex.getMessage() : "Internal server error",
-                request.getRequestURI()
+                status,
+                status.value(),
+                message,
+                path
         );
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(response, status);
     }
 }
