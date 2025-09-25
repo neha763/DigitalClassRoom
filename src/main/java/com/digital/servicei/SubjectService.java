@@ -1,7 +1,13 @@
+
+
+package com.digital.servicei;
+import com.digital.dto.SubjectRequest;
+import com.digital.dto.SubjectResponse;
+
 package com.digital.servicei;
 
 import com.digital.dto.SubjectRequest;
-import com.digital.dto.SubjectResponse;
+import com.digital.entity.Subject;
 
 
 import java.util.List;
@@ -13,6 +19,4 @@ public interface SubjectService {
     void deleteSubject(Long subjectId);
     List<SubjectResponse> getAllSubjects();
     SubjectResponse getSubjectById(Long subjectId);
-
-
 }
