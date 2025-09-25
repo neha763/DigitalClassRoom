@@ -40,8 +40,32 @@ public class StudentServiceImpl implements StudentService {
         SchoolClass schoolClass = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new RuntimeException("Class not found with ID: " + request.getClassId()));
 
+
+            // ✅ Create Student
+            Student student = Student.builder()
+                    .user(user) // cascade will persist user
+                    .rollNumber(request.getRollNumber())
+                    .firstName(request.getFirstName())
+                    .middleName(request.getMiddleName())
+                    .lastName(request.getLastName())
+                    .email(request.getEmail())
+                    .mobileNumber(request.getMobileNumber())
+                    .dateOfBirth(request.getDateOfBirth())
+                    .gender(request.getGender())
+                    .street(request.getStreet())
+                    .city(request.getCity())
+                    .state(request.getState())
+                    .country(request.getCountry())
+                    .pinCode(request.getPinCode())
+                    .schoolClass(schoolClass)   // now defined
+                    .section(section)
+                    .admissionNumber(request.getAdmissionNumber())   // ✅ add this
+                    .academicYear(request.getAcademicYear())   // now defined
+                    .build();
+
         Section section = sectionRepository.findById(request.getSectionId())
                 .orElseThrow(() -> new RuntimeException("Section not found with ID: " + request.getSectionId()));
+
 
         Student student = Student.builder()
                 .user(user)   // 🔑 link User <-> Student
@@ -283,6 +307,12 @@ public StudentResponse getStudentClassDetails(Long studentId) {
                 .orElseThrow(() -> new RuntimeException("Student not found for user: " + username));
     }
     @Override
+
+    public Student getStudentById(Long studentId) {
+        return studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
+    }
+
     public StudentResponse getMyProfile() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return getMyProfile(username);
@@ -332,6 +362,7 @@ public StudentResponse getStudentClassDetails(Long studentId) {
         return userRepository.findByUsername(username)
                 .flatMap(studentRepository::findByUser);
     }
+
 
 
 }

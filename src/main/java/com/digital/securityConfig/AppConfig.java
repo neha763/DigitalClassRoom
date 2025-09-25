@@ -69,8 +69,39 @@ public class AppConfig {
                         .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
                         .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
 
+
+                        // attendance rule apis
+                        .requestMatchers( "/api/attendanceRules/**").hasRole("ADMIN")
+
+                        // class session apis
+                        .requestMatchers("/api/session").hasRole("TEACHER")
+                        .requestMatchers("/api/session/get").hasAnyRole("TEACHER', 'STUDENT', 'ADMIN")
+
+                         // attendance apis for STUDENT AND TEACHER
+                        .requestMatchers("/api/attendance/join-session/*", "/api/attendance/leave-session/*")
+                           .hasRole("STUDENT")
+
+                        .requestMatchers("/api/attendance/auto-mark/*", "/api/attendance/check-in-list/*",
+                                "/api/attendance/view/*", "/api/attendance/view-all/*", "/api/attendance/update/*")
+                           .hasRole("TEACHER")
+
+                        //report
+                                .requestMatchers("/api/admin/exams/report-cards/generate")
+                                .hasAnyRole("ADMIN", "TEACHER")
+                                .requestMatchers("/reports/**").permitAll()   // static reports folder
+                                .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "PARENT")  // secure API
+                                .requestMatchers("/api/teacher/**").hasAnyRole("ADMIN", "TEACHER")
+
+
+                                // attendance apis for ADMIN
+                        .requestMatchers("/api/attendance/admin/update/*", "/api/attendance/admin/view/*",
+                                "/api/attendance/admin/view-all/*", "/api/attendance/admin/delete/*").hasRole("ADMIN")
+
+                        .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
+
                         // attendance rules
                         .requestMatchers("/api/attendanceRules/**").hasRole("ADMIN")
+
 
                         // subject apis
                         .requestMatchers("/api/admin/subject", "/api/admin/subject/*",

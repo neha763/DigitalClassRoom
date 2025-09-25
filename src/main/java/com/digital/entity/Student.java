@@ -31,6 +31,17 @@ public class Student {
     @Pattern(regexp = "^[A-Z0-9]{5,15}$", message = "Roll number must be alphanumeric (5–15 characters)")
     private String rollNumber;
 
+    @Column(nullable = false)
+    @NotBlank(message = "Academic year is required")
+    @Pattern(regexp = "^[0-9]{4}-[0-9]{4}$", message = "Academic year must be in format YYYY-YYYY")
+    private String academicYear;
+
+
+    @Column(nullable = false, unique = true)
+    @NotBlank(message = "Admission number is required")
+    @Pattern(regexp = "^[0-9]{4,10}$", message = "Admission number must be 4–10 digits")
+    private String admissionNumber;
+
     @NotBlank(message = "First name is required")
     @Size(max = 50)
     private String firstName;

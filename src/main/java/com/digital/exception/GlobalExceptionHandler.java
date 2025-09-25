@@ -78,6 +78,53 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
+
+
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<Map<String, String>> handleValidationExceptions(
+        MethodArgumentNotValidException ex) {
+
+    Map<String, String> errors = new HashMap<>();
+    ex.getBindingResult().getFieldErrors().forEach(error ->
+            errors.put(error.getField(), error.getDefaultMessage())
+    );
+
+    return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+}
+    @ExceptionHandler(ExamNotFoundException.class)
+    public ResponseEntity<?> handleExamNotFound(ExamNotFoundException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Exam Not Found");
+        error.put("message", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(DuplicateExamScheduleException.class)
+    public ResponseEntity<?> handleDuplicateExam(DuplicateExamScheduleException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, "Duplicate Exam Schedule", ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidSubmissionException.class)
+    public ResponseEntity<?> handleInvalidSubmission(InvalidSubmissionException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid Submission", ex.getMessage());
+    }
+
+    @ExceptionHandler(ResultAlreadyPublishedException.class)
+    public ResponseEntity<?> handleResultPublished(ResultAlreadyPublishedException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Result Already Published", ex.getMessage());
+    }
+
+    private ResponseEntity<?> buildErrorResponse(HttpStatus status, String error, String message) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", status.value());
+        body.put("error", error);
+        body.put("message", message);
+        return new ResponseEntity<>(body, status);
+    }
+
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -98,4 +145,5 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
 }
