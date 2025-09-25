@@ -2,7 +2,6 @@ package com.digital.dto;
 
 import com.digital.entity.SchoolClass;
 import com.digital.entity.Section;
-import com.digital.entity.Subject;
 import com.digital.entity.Teacher;
 import com.digital.enums.DayOfWeek;
 import jakarta.persistence.*;

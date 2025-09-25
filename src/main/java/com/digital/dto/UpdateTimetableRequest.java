@@ -1,6 +1,5 @@
 package com.digital.dto;
 
-import com.digital.entity.Subject;
 import com.digital.entity.Teacher;
 import lombok.Getter;
 import lombok.Setter;
