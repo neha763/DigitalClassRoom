@@ -19,16 +19,4 @@ public interface SubjectService {
     void deleteSubject(Long subjectId);
     List<SubjectResponse> getAllSubjects();
     SubjectResponse getSubjectById(Long subjectId);
-
-
-    String addSubject(SubjectRequest subjectRequest);
-
-    Subject getSubject(Long subjectId);
-
-    List<Subject> getSubjectsByClassId(Long classId);
-
-    List<Subject> getSubjectsByTeacherId(Long teacherId);
-
-    String updateSubject(Long subjectId, Long teacherId);
-
 }
