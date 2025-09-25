@@ -42,6 +42,7 @@ public class AppFilter extends OncePerRequestFilter {
             if (header != null && header.startsWith("Bearer ")) {
                 token = header.substring(7);
                 username = jwtService.extractUsername(token);
+                System.out.println("username " + username);
             }
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

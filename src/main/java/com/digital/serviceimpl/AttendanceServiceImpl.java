@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,7 +59,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                             session.getSessionId()).orElseThrow(() -> new ResourceNotFoundException("Attendance record with student id: "
                     + student.getStudentRegId() + " and session id: " + session.getSessionId() + " not found in database."));
 
-            existedAttendanceRecord.setJoinTime(LocalTime.now());
+            existedAttendanceRecord.setJoinTime(LocalDateTime.now());
             attendanceRepository.save(existedAttendanceRecord);
 
             return student.getFirstName() + " " + student.getLastName() + " has rejoined the session at " +
@@ -68,7 +68,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         // checking if student try to join the session after session end time
 
-        if (LocalTime.now().isAfter(session.getEndTime()))
+        if (LocalDateTime.now().isAfter(session.getEndTime()))
                 return "Session has ended at " + session.getEndTime();
 
         /*
@@ -81,14 +81,14 @@ public class AttendanceServiceImpl implements AttendanceService {
         AttendanceRule attendanceRule = attendanceRulesRepository.findByRuleName(AttendanceRuleName.LATE).orElseThrow(() ->
                 new ResourceNotFoundException("No rule found for LATE check-in"));
 
-        if(LocalTime.now().isAfter(session.getStartTime().plusMinutes(attendanceRule.getSessionDurationPercentage1()))){
+        if(LocalDateTime.now().isAfter(session.getStartTime().plusMinutes(attendanceRule.getSessionDurationPercentage1()))){
 
             Attendance attendance = Attendance.builder()
                     .student(student)
                     .session(session)
                     .schoolClass(schoolClass)
                     .date(LocalDate.now())
-                    .joinTime(LocalTime.now())
+                    .joinTime(LocalDateTime.now())
                     .status(AttendanceStatus.LATE)
                     .build();
 
@@ -103,13 +103,13 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .session(session)
                 .schoolClass(schoolClass)
                 .date(LocalDate.now())
-                .joinTime(LocalTime.now())
+                .joinTime(LocalDateTime.now())
                 .build();
 
         /* If student has joined the session before session start time then his/her joined time will be
         session start time */
 
-        if(LocalTime.now().isBefore(session.getStartTime())){
+        if(LocalDateTime.now().isBefore(session.getStartTime())){
             attendance.setJoinTime(session.getStartTime());
         }
 
@@ -136,7 +136,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 session.getSessionId()).orElseThrow(() -> new ResourceNotFoundException("Attendance record with student id: "
                 + student.getStudentRegId() + " and session id: " + session.getSessionId() + " not found in database."));
 
-        LocalTime exitTime = LocalTime.now();
+        LocalDateTime exitTime = LocalDateTime.now();
 
         existedAttendanceRecord.setExitTime(exitTime);
 
@@ -209,7 +209,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         Session session = sessionRepository.findById(sessionId).orElseThrow(() ->
                 new ResourceNotFoundException("Session record with session id " + sessionId + " not found in database."));
 
-        if(!LocalTime.now().isAfter(session.getEndTime())){
+        if(!LocalDateTime.now().isAfter(session.getEndTime())){
             return "Session " + sessionId + " is not ended yet.";
         }
 
