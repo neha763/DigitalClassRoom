@@ -1,14 +1,23 @@
 package com.digital.servicei;
 
-import com.digital.dto.SessionRequest;
 import com.digital.entity.Session;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface SessionService {
-    String createSession(SessionRequest sessionRequest);
+
+    //String createSession(SessionRequest sessionRequest);
 
     List<Session> getAllSessions();
+
+    Session createSession(Session session);
+
+    String addJoinLink(Long sessionId) throws IOException;
+
+    List<Session> getTeacherSessions(Long id);
+
+    List<Session> getStudentSessions(Long sectionId);
 
     // create session
 

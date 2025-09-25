@@ -72,9 +72,27 @@ public class AppConfig {
                         // attendance rules
                         .requestMatchers("/api/attendanceRules/**").hasRole("ADMIN")
 
-                        // session
-                        .requestMatchers("/api/session").hasRole("TEACHER")
+                        // subject apis
+                        .requestMatchers("/api/admin/subject", "/api/admin/subject/*",
+                         "/api/admin/subject/class/*", "/api/admin/subject/teacher/*",
+                         "/api/admin/subject/update/*").hasRole("ADMIN")
+
+                        // admin timetable apis
+                        .requestMatchers("/api/admin/timetable/**").hasRole("ADMIN")
+
+                        // teacher timetable and session apis
+                        .requestMatchers("/teacher/timetable/*", "/teacher/sessions/*").hasRole("TEACHER")
+
+                        // student timetable and session apis
+                        .requestMatchers("/student/timetable/*", "/student/sessions/*").hasRole("STUDENT")
+
+                        // class session apis
+                        .requestMatchers("/api/session/joinLink").hasRole("TEACHER")
                         .requestMatchers("/api/session/get").hasAnyRole("TEACHER", "STUDENT", "ADMIN")
+
+                        // Google Meet apis
+                        .requestMatchers("/auth/google/**").permitAll()
+                        .requestMatchers("/oauth2/callback/**").permitAll()
 
                         // student attendance
                         .requestMatchers("/api/attendance/join-session/*", "/api/attendance/leave-session/*").hasRole("STUDENT")

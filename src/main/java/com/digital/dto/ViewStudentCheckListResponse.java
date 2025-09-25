@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -21,9 +21,9 @@ public class ViewStudentCheckListResponse {
 
     private String fullName;
 
-    private LocalTime joinTime;
+    private LocalDateTime joinTime;
 
-    private LocalTime exitTime;
+    private LocalDateTime exitTime;
 
     private Long durationMinutes;
 

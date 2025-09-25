@@ -1,10 +1,10 @@
 package com.digital.entity;
 
+import com.digital.enums.DayOfWeek;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -12,32 +12,36 @@ import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Setter
 @Getter
-@Builder
+@Setter
 @Entity
-@JsonIgnoreProperties({"schoolClass", "section", "teacher", "timetable"})
-public class Session {
+@Builder
+@JsonIgnoreProperties({"schoolClass", "section", "subject", "teacher"})
+public class Timetable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long sessionId;
+    private Long timetableId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "timetableId", nullable = false)
-    private Timetable timetable;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "classId", nullable = false)
     private SchoolClass schoolClass;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sectionId", nullable = false)
     private Section section;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "teacherId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subjectId", nullable = false)
+    private Subject subject;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", nullable = false)
     private Teacher teacher;
+
+    @NotNull(message = "Day of week is required")
+    @Enumerated(EnumType.STRING)
+    private DayOfWeek dayOfWeek;
 
     @FutureOrPresent(message = "Only Present or Future date is allowed")
     @Column(nullable = false)
@@ -49,26 +53,17 @@ public class Session {
     @Column(nullable = false)
     private LocalDateTime endTime;
 
-    @NotBlank
-    @Size(min = 2, max = 50, message = "Topic must be between 2 to 50 characters")
-    @Column(nullable = false)
-    private String topic;
-
-    @Size(max = 300, message = "Only 300 characters are allowed in description")
-    private String description;
-
-    private String joinLink;
-
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 
     @PrePersist
-    public void setCreatedAt(){
+    public void onCreated(){
         this.createdAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    public void setUpdated(){
+    public void onUpdated(){
         this.updatedAt = LocalDateTime.now();
     }
 }
