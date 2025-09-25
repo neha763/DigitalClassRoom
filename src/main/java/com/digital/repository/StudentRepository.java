@@ -13,12 +13,13 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     Optional<Student> findByRollNumber(String rollNumber);
     boolean existsByEmail(String email);
 
-    // Check if roll number already exists in a given class
     boolean existsByRollNumberAndSchoolClass_ClassId(String rollNumber, Long classId);
 
+    Optional<Student> findByUserUsername(String username);
 
     Optional<Student> findByUser_Username(String username);
     //List<Student> findAllBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
+
 
     List<Student> findBySchoolClass_ClassId(Long classId);
 
@@ -31,6 +32,15 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     List<Student> findAllBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
     List<Student> findBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
+
+
+    List<Student> findAllBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
+
+    List<Student> findBySchoolClass_ClassId(Long classId);
+
+    List<Student> findBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
+    Optional<Student> findByUser_UserId(Long userId);
+    Optional<Student> findByUser(User user);
 
 
 }

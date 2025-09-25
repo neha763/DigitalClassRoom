@@ -4,7 +4,7 @@ import com.digital.entity.SchoolClass;
 
 import java.util.List;
 
-public interface ClassService {
+public interface    ClassService {
     SchoolClass createClass(SchoolClass schoolClass);
     SchoolClass updateClass(Long classId, SchoolClass schoolClass);
     void deleteClass(Long classId);

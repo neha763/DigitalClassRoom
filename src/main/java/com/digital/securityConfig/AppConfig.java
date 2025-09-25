@@ -40,10 +40,10 @@ public class AppConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
@@ -54,19 +54,21 @@ public class AppConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         logger.info("Building Security Filter Chain...");
+
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
 
-                         // auth login
+                        // auth/login
                         .requestMatchers("/api/auth/login").permitAll()
 
-                        // user apis
+                        // user APIs
                         .requestMatchers("/api/user/otp", "/api/user/password").permitAll()
                         .requestMatchers("/api/user/create", "/api/user/status/*").hasRole("ADMIN")
 
-                        // audit log apis
+                        // audit log
                         .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
                         .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
+
 
                         // attendance rule apis
                         .requestMatchers( "/api/attendanceRules/**").hasRole("ADMIN")
@@ -97,46 +99,56 @@ public class AppConfig {
 
                         .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
 
-
-                           .requestMatchers("/api/teacher/**").hasRole("ADMIN")
-//                           .requestMatchers("/api/teacher/**").permitAll()
-
-                            //class and section
-
-                        .requestMatchers("/api/class/**").hasRole("ADMIN")
-                        .requestMatchers("/api/section/**").hasRole("ADMIN")
-
-//                        .requestMatchers("/admin/**").hasRole("ADMIN")
-//                        .requestMatchers("/admin/classes/**").hasRole("ADMIN")
-//                        .requestMatchers("/admin/classes/**/sections").hasRole("ADMIN")
-//                        .requestMatchers("/admin/classes").hasRole("ADMIN")
-//                        //.requestMatchers("/admin/classes/{id}").hasRole("ADMIN")
-//                        .requestMatchers("/admin/classes/*").hasRole("ADMIN")
+                        // attendance rules
+                        .requestMatchers("/api/attendanceRules/**").hasRole("ADMIN")
 
 
-                        .requestMatchers("/api/**").authenticated()
+                        // subject apis
+                        .requestMatchers("/api/admin/subject", "/api/admin/subject/*",
+                         "/api/admin/subject/class/*", "/api/admin/subject/teacher/*",
+                         "/api/admin/subject/update/*").hasRole("ADMIN")
 
+                        // admin timetable apis
+                        .requestMatchers("/api/admin/timetable/**").hasRole("ADMIN")
 
-//        http.csrf(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(auth -> auth
+                        // teacher timetable and session apis
+                        .requestMatchers("/teacher/timetable/*", "/teacher/sessions/*").hasRole("TEACHER")
 
+                        // student timetable and session apis
+                        .requestMatchers("/student/timetable/*", "/student/sessions/*").hasRole("STUDENT")
 
+                        // class session apis
+                        .requestMatchers("/api/session/joinLink").hasRole("TEACHER")
+                        .requestMatchers("/api/session/get").hasAnyRole("TEACHER", "STUDENT", "ADMIN")
 
+                        // Google Meet apis
+                        .requestMatchers("/auth/google/**").permitAll()
+                        .requestMatchers("/oauth2/callback/**").permitAll()
 
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/user/otp", "/api/user/password").permitAll()
-                        .requestMatchers("/api/user/create", "/api/user/status/*").hasRole("ADMIN")
-                        .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
-                        .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
+                        // student attendance
+                        .requestMatchers("/api/attendance/join-session/*", "/api/attendance/leave-session/*").hasRole("STUDENT")
+
+                        // teacher attendance
+                        .requestMatchers("/api/attendance/auto-mark/*", "/api/attendance/check-in-list/*",
+                                "/api/attendance/view/*", "/api/attendance/view-all/*", "/api/attendance/update/*")
+                        .hasRole("TEACHER")
+
+                        // admin attendance
+                        .requestMatchers("/api/attendance/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
+
+                        // teacher APIs
                         .requestMatchers("/api/teacher/**").hasRole("ADMIN")
+
+                        // class/section
+                        .requestMatchers("/api/class/**", "/api/section/**").hasRole("ADMIN")
+
+                        // students
+                        .requestMatchers("/api/students/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/students/**").hasRole("STUDENT")
+
+                        // any other API requires auth
                         .requestMatchers("/api/**").authenticated()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/admin/classes/**").hasRole("ADMIN")
-                        .requestMatchers("/admin/classes/**/sections").hasRole("ADMIN")
-                        .requestMatchers("/admin/classes").hasRole("ADMIN")
-                        .requestMatchers("/admin/classes/*").hasRole("ADMIN")
-
-
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint())

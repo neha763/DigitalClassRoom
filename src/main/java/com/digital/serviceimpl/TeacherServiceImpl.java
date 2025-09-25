@@ -187,13 +187,14 @@ public class TeacherServiceImpl implements TeacherService {
         // Assign Classes
         if (request.getAssignedClassIds() != null && !request.getAssignedClassIds().isEmpty()) {
             List<SchoolClass> classes = classRepository.findAllById(request.getAssignedClassIds());
-            teacher.getAssignedClass().addAll(classes);
+            teacher.setAssignedClass(classes);
         }
 
         // Assign Sections
         if (request.getAssignedSectionIds() != null && !request.getAssignedSectionIds().isEmpty()) {
             List<Section> sections = sectionRepository.findAllById(request.getAssignedSectionIds());
-            teacher.getAssignedSection().addAll(sections);
+            sections.stream().forEach(s -> System.out.println("Section Name: " + s.getSectionName()));
+            teacher.setAssignedSection(sections);
         }
 
         // Save teacher (ID will be generated here)

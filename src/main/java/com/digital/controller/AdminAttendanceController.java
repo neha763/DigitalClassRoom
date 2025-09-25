@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.FileNotFoundException;
 import java.util.List;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping(value = "/api/attendance/admin")
 public class AdminAttendanceController {

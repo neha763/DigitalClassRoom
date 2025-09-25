@@ -8,7 +8,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,9 +38,9 @@ public class Attendance {
     private LocalDate date;
 
     //@Column(nullable = false) // It should be null for auto mark absent api
-    private LocalTime joinTime; // (student check-in)
+    private LocalDateTime joinTime; // (student check-in)
 
-    private LocalTime exitTime; // (student check-out)
+    private LocalDateTime exitTime; // (student check-out)
 
     private Long durationMinutes; //(auto-calculated)
 
