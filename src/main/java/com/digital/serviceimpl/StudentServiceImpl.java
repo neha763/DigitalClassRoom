@@ -91,7 +91,9 @@ public class StudentServiceImpl implements StudentService {
                     .country(request.getCountry())
                     .pinCode(request.getPinCode())
                     .schoolClass(schoolClass)   // now defined
-                    .section(section)           // now defined
+                    .section(section)
+                    .admissionNumber(request.getAdmissionNumber())   // ✅ add this
+                    .academicYear(request.getAcademicYear())   // now defined
                     .build();
 
             Student saved = studentRepository.save(student);
@@ -335,5 +337,9 @@ public StudentResponse getStudentClassDetails(Long studentId) {
         return studentRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Student not found for user: " + username));
     }
-
+    @Override
+    public Student getStudentById(Long studentId) {
+        return studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
+    }
 }

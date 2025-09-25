@@ -83,7 +83,15 @@ public class AppConfig {
                                 "/api/attendance/view/*", "/api/attendance/view-all/*", "/api/attendance/update/*")
                            .hasRole("TEACHER")
 
-                        // attendance apis for ADMIN
+                        //report
+                                .requestMatchers("/api/admin/exams/report-cards/generate")
+                                .hasAnyRole("ADMIN", "TEACHER")
+                                .requestMatchers("/reports/**").permitAll()   // static reports folder
+                                .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "PARENT")  // secure API
+                                .requestMatchers("/api/teacher/**").hasAnyRole("ADMIN", "TEACHER")
+
+
+                                // attendance apis for ADMIN
                         .requestMatchers("/api/attendance/admin/update/*", "/api/attendance/admin/view/*",
                                 "/api/attendance/admin/view-all/*", "/api/attendance/admin/delete/*").hasRole("ADMIN")
 

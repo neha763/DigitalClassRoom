@@ -5,6 +5,7 @@ import com.digital.entity.Student;
 import com.digital.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StudentService {
     StudentResponse createStudent(StudentRequest request);
@@ -22,4 +23,7 @@ public interface StudentService {
     List<StudentResponse> getStudentsByClass(Long classId, Long sectionId);
     StudentResponse getStudentClassDetails(Long studentId);
     Student getStudentByUsername(String username);
+    Student getStudentById(Long studentId);
+
+
 }
