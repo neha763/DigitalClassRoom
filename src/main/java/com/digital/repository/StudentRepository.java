@@ -30,17 +30,17 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     Optional<Student> findByUser(User user);
     //List<Student> findBySchoolClassClassIdAndSectionSectionId(Long classId, Long sectionId);
 
-    List<Student> findAllBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
+//    List<Student> findAllBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
     List<Student> findBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
 
 
     List<Student> findAllBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
 
-    List<Student> findBySchoolClass_ClassId(Long classId);
+//    List<Student> findBySchoolClass_ClassId(Long classId);
 
-    List<Student> findBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
+//    List<Student> findBySchoolClass_ClassIdAndSection_SectionId(Long classId, Long sectionId);
     Optional<Student> findByUser_UserId(Long userId);
-    Optional<Student> findByUser(User user);
+//    Optional<Student> findByUser(User user);
 
 
 }

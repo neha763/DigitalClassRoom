@@ -108,7 +108,7 @@ public List<UpcomingExamResponse> getExamsForStudent(Long studentId) {
                             .obtainedMarks(result.getObtainedMarks())
                             .percentage(result.getPercentage())
                             .grade(result.getGrade())
-                            .status(result.getStatus() != null ? result.getStatus().name() : "PENDING")
+                            .status(SubmissionStatus.valueOf(result.getStatus() != null ? result.getStatus().name() : "PENDING"))
                             .subjects(subjectResults)
                             .build();
                 })

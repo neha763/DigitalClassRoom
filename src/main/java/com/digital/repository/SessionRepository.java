@@ -10,7 +10,7 @@ import java.util.List;
 public interface SessionRepository extends JpaRepository<Session, Long> {
 
     List<Session> findAllBySchoolClass_ClassId(Long classId);
-=======
+
     List<Session> findAllByTeacher_Id(Long id);
 
     List<Session> findAllBySection_SectionId(Long sectionId);
