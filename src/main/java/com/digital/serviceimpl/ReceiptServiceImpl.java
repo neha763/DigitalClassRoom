@@ -70,7 +70,6 @@ public class ReceiptServiceImpl implements ReceiptService {
         String mode = payment != null && payment.getPaymentMode() != null ? payment.getPaymentMode().name() : "-";
         String txnId = payment != null ? Optional.ofNullable(payment.getTransactionId()).orElse("-") : "-";
 
-        // PDF Build
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfWriter writer = new PdfWriter(baos);
         PdfDocument pdf = new PdfDocument(writer);
@@ -79,7 +78,7 @@ public class ReceiptServiceImpl implements ReceiptService {
         PdfFont bold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
         PdfFont regular = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
-        // Header
+
         Paragraph header = new Paragraph("Payment Receipt")
                 .setFont(bold)
                 .setFontSize(20)
@@ -87,7 +86,6 @@ public class ReceiptServiceImpl implements ReceiptService {
                 .setMarginBottom(20);
         document.add(header);
 
-        // Info Table
         Table info = new Table(UnitValue.createPercentArray(new float[]{40, 60}))
                 .useAllAvailableWidth()
                 .setMarginLeft(60)

@@ -27,7 +27,7 @@ public class PaymentDTO {
 
     @NotNull(message = "Payment mode is required")
     private String paymentMode;
-@Column(nullable = false,unique = true)
+    @Column(nullable = false,unique = true)
     private String transactionId;
     private String gatewayReferenceId;
     private String status;

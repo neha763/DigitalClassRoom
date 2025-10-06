@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/gateway")
 public class GatewayController {
@@ -32,7 +32,8 @@ public class GatewayController {
 
         response.put("orderId", orderId);
         response.put("amount", String.valueOf(amount));
-        response.put("upiLink", "upi://pay?orderId=" + orderId);
+        //response.put("upiLink", "upi://pay?orderId=" + orderId);
+        response.put("upiLink", "upi://pay?pa=digitalclassroom@upi&pn=Digital Classroom&am=" + amount + "&cu=INR");
 
         return ResponseEntity.ok(response);
     }

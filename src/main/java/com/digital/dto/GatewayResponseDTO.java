@@ -16,15 +16,13 @@ public class GatewayResponseDTO {
 
     @NotBlank(message = "Status is required")
     @Size(max = 20, message = "Status must be at most 20 characters")
-    private String status; // SUCCESS, FAILED, PENDING
+    private String status;
 
     @Size(max = 500, message = "Message cannot exceed 500 characters")
-    private String message; // optional descriptive message
-
+    private String message;
     @Size(max = 200, message = "UPI/QR link cannot exceed 200 characters")
-    private String upiOrQr; // optional field for UPI/QR code link
+    private String upiOrQr;
 
-    // Getters & Setters
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
 

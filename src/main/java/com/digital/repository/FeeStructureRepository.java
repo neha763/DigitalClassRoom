@@ -15,4 +15,5 @@ public interface FeeStructureRepository extends JpaRepository<FeeStructure, Long
 
     List<FeeStructure> findByClassId(Long classId);
 
+
 }
