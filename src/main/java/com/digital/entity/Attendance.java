@@ -8,7 +8,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,8 +22,8 @@ public class Attendance {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long attendanceId;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "studentId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false) // ✅ Corrected
+    @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -39,9 +38,9 @@ public class Attendance {
     private LocalDate date;
 
     //@Column(nullable = false) // It should be null for auto mark absent api
-    private LocalTime joinTime; // (student check-in)
+    private LocalDateTime joinTime; // (student check-in)
 
-    private LocalTime exitTime; // (student check-out)
+    private LocalDateTime exitTime; // (student check-out)
 
     private Long durationMinutes; //(auto-calculated)
 

@@ -1,14 +1,11 @@
 package com.digital.securityConfig;
 
-import com.digital.exception.CustomErrorResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.digital.exception.CustomForbiddenException;
+import com.digital.exception.CustomUnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -22,9 +19,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.OutputStream;
 
 @Configuration
 public class AppConfig {
@@ -63,30 +57,97 @@ public class AppConfig {
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+
+                        // auth/login
                         .requestMatchers("/api/auth/login").permitAll()
+
+                        // user APIs
                         .requestMatchers("/api/user/otp", "/api/user/password").permitAll()
                         .requestMatchers("/api/user/create", "/api/user/status/*").hasRole("ADMIN")
+
+                        // audit log
                         .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
                         .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
-                        .requestMatchers("/api/attendanceRules/**").hasRole("ADMIN")
+
+
+                        // attendance rule apis
+                        .requestMatchers( "/api/attendanceRules/**").hasRole("ADMIN")
+
+                        // class session apis
                         .requestMatchers("/api/session").hasRole("TEACHER")
+                        .requestMatchers("/api/session/get").hasAnyRole("TEACHER', 'STUDENT', 'ADMIN")
+
+                         // attendance apis for STUDENT AND TEACHER
+                        .requestMatchers("/api/attendance/join-session/*", "/api/attendance/leave-session/*")
+                           .hasRole("STUDENT")
+
+                        .requestMatchers("/api/attendance/auto-mark/*", "/api/attendance/check-in-list/*",
+                                "/api/attendance/view/*", "/api/attendance/view-all/*", "/api/attendance/update/*")
+                           .hasRole("TEACHER")
+
+                        //report
+                                .requestMatchers("/api/admin/exams/report-cards/generate")
+                                .hasAnyRole("ADMIN", "TEACHER")
+                                .requestMatchers("/reports/**").permitAll()   // static reports folder
+                                .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "PARENT")  // secure API
+                                .requestMatchers("/api/teacher/**").hasAnyRole("ADMIN", "TEACHER")
+
+
+                                // attendance apis for ADMIN
+                        .requestMatchers("/api/attendance/admin/update/*", "/api/attendance/admin/view/*",
+                                "/api/attendance/admin/view-all/*", "/api/attendance/admin/delete/*").hasRole("ADMIN")
+
+                        .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
+
+                        // attendance rules
+                        .requestMatchers("/api/attendanceRules/**").hasRole("ADMIN")
+
+
+                        // subject apis
+                        .requestMatchers("/api/admin/subject", "/api/admin/subject/*",
+                         "/api/admin/subject/class/*", "/api/admin/subject/teacher/*",
+                         "/api/admin/subject/update/*").hasRole("ADMIN")
+
+                        // admin timetable apis
+                        .requestMatchers("/api/admin/timetable/**").hasRole("ADMIN")
+
+                        // teacher timetable and session apis
+                        .requestMatchers("/teacher/timetable/*", "/teacher/sessions/*").hasRole("TEACHER")
+
+                        // student timetable and session apis
+                        .requestMatchers("/student/timetable/*", "/student/sessions/*").hasRole("STUDENT")
+
+                        // class session apis
+                        .requestMatchers("/api/session/joinLink").hasRole("TEACHER")
                         .requestMatchers("/api/session/get").hasAnyRole("TEACHER", "STUDENT", "ADMIN")
+
+                        // Google Meet apis
+                        .requestMatchers("/auth/google/**").permitAll()
+                        .requestMatchers("/oauth2/callback/**").permitAll()
+
+                        // student attendance
                         .requestMatchers("/api/attendance/join-session/*", "/api/attendance/leave-session/*").hasRole("STUDENT")
-                        .requestMatchers("/api/attendance/auto-mark/*",
-                                "/api/attendance/check-in-list/*",
-                                "/api/attendance/view/*",
-                                "/api/attendance/view-all/*",
-                                "/api/attendance/update/*").hasRole("TEACHER")
+
+                        // teacher attendance
+                        .requestMatchers("/api/attendance/auto-mark/*", "/api/attendance/check-in-list/*",
+                                "/api/attendance/view/*", "/api/attendance/view-all/*", "/api/attendance/update/*")
+                        .hasRole("TEACHER")
+
+                        // admin attendance
                         .requestMatchers("/api/attendance/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
-                        .requestMatchers("/api/teacher/**").hasRole("ADMIN")
-                        .requestMatchers("/api/class/**", "/api/section/**").hasRole("ADMIN")
-                        //.requestMatchers("/api/students/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/students/**").hasRole("STUDENT")
-                        .requestMatchers("/api/admin/**", "/api/gateway**").hasRole("ADMIN")
-                        .requestMatchers("/api/payment/**").hasRole("STUDENT")
-                        .requestMatchers("/api/studentFee/**").hasRole("STUDENT")
 
+                        // teacher APIs
+                        .requestMatchers("/api/teacher/**").hasRole("ADMIN")
+
+                        // class/section
+                        .requestMatchers("/api/class/**", "/api/section/**").hasRole("ADMIN")
+
+                        // students
+                        .requestMatchers("/api/students/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/students/**").hasRole("STUDENT")
+
+                        // any other API requires auth
                         .requestMatchers("/api/**").authenticated()
                 )
                 .exceptionHandling(ex -> ex
@@ -103,43 +164,14 @@ public class AppConfig {
     @Bean
     public AuthenticationEntryPoint customAuthenticationEntryPoint() {
         return (request, response, authException) -> {
-            CustomErrorResponse error = new CustomErrorResponse(
-                    HttpStatus.FORBIDDEN,
-                    "Unauthorized - Please log in",
-                    request.getRequestURI()
-            );
-
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            try (OutputStream out = response.getOutputStream()) {
-                new ObjectMapper().writeValue(out, error);
-                out.flush();
-            }
+            throw new CustomUnauthorizedException("Unauthorized - Please log in");
         };
     }
 
     @Bean
     public AccessDeniedHandler customAccessDeniedHandler() {
         return (request, response, accessDeniedException) -> {
-            CustomErrorResponse error = new CustomErrorResponse(
-                    HttpStatus.FORBIDDEN,
-                    "Forbidden - You do not have access to this resource",
-                    request.getRequestURI()
-            );
-
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("application/json");
-            try (OutputStream out = response.getOutputStream()) {
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.registerModule(new JavaTimeModule());
-                mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                mapper.writeValue(out, error);
-                out.flush();
-            }
+            throw new CustomForbiddenException("Forbidden - You do not have access to this resource");
         };
     }
-
 }
-
-
-

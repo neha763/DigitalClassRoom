@@ -31,6 +31,11 @@ private String firstName;
     private List<Long> assignedClassIds;
     private List<Long> assignedSectionIds;
     private List<Long> studentIds;
+    private Long classTeacherId;
+    private boolean isClassTeacher;
+
+    private Long classId;
+    private Long sectionId;
 }
 
 

@@ -12,15 +12,17 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
 @AllArgsConstructor
+@Builder
 public class SessionRequest {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -41,11 +43,11 @@ public class SessionRequest {
 
     @Future(message = "Only future time is allowed")
     @Column(nullable = false)
-    private LocalTime startTime;
+    private LocalDateTime startTime;
 
     @Future(message = "Only future time is allowed")
     @Column(nullable = false)
-    private LocalTime endTime;
+    private LocalDateTime endTime;
 
     @NotBlank
     @Size(min = 2, max = 50, message = "Topic must be between 2 to 50 characters")

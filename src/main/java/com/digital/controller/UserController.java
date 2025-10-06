@@ -11,8 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -23,7 +22,9 @@ public class UserController {
         this.userServiceI = userServiceI;
     }
 
-
+    /**
+     * Create new user (ADMIN only).
+     */
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<String> createNewUser(@Valid @RequestBody User user) {
@@ -31,21 +32,27 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
+    /**
+     * Forgot password → send OTP to email.
+     */
     @PostMapping("/otp")
     public ResponseEntity<String> forgotPassword(@Valid @RequestBody EmailDto emailDto) {
         String response = userServiceI.sendOtp(emailDto);
         return ResponseEntity.ok(response);
     }
 
-
+    /**
+     * Reset password with OTP.
+     */
     @PutMapping("/password")
     public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordDto resetPasswordDto) {
         String response = userServiceI.resetPassword(resetPasswordDto);
         return ResponseEntity.ok(response);
     }
 
-
+    /**
+     * Update user status (ADMIN only).
+     */
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/status/{userId}")
     public ResponseEntity<String> manageUserStatus(
@@ -55,21 +62,5 @@ public class UserController {
         String response = userServiceI.manageUserStatus(userId, manageStatusDto);
         return ResponseEntity.ok(response);
     }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/all")
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userServiceI.getAllUsers();
-        return ResponseEntity.ok(users);
-    }
-
-
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    @GetMapping("/{userId}")
-    public ResponseEntity<User> getUserById(@PathVariable Long userId) {
-        User user = userServiceI.getUserById(userId);
-        return ResponseEntity.ok(user);
-    }
-
 
 }

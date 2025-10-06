@@ -10,14 +10,15 @@ import com.digital.repository.*;
 import com.digital.servicei.TeacherService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-import com.digital.dto.AssignTeacherRequest;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TeacherServiceImpl implements TeacherService {
@@ -27,10 +28,12 @@ public class TeacherServiceImpl implements TeacherService {
     private final SectionRepository sectionRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ClassTeacherRepository classTeacherRepository;
+
 
     private TeacherDto mapToDto(Teacher teacher) {
         return TeacherDto.builder()
-                   .id (teacher.getId())
+                .id(teacher.getId())
                 .userId(teacher.getId())
                 .firstName(teacher.getFirstName())
                 .lastName(teacher.getLastName())
@@ -40,6 +43,9 @@ public class TeacherServiceImpl implements TeacherService {
                 .experienceYears(teacher.getExperienceYears())
                 .gender(teacher.getGender())
                 .dateOfBirth(teacher.getDateOfBirth())
+                .classTeacher(teacher.getClassTeacher())
+
+                .isClassTeacher(teacher.isClassTeacher())
                 .classIds(teacher.getAssignedClass() != null
                         ? teacher.getAssignedClass().stream().map(SchoolClass::getClassId).toList()
                         : List.of())
@@ -63,6 +69,8 @@ public class TeacherServiceImpl implements TeacherService {
                 .firstName(teacher.getFirstName())
                 .lastName(teacher.getLastName())
                 .email(teacher.getEmail())
+
+
                 .classId(!teacher.getAssignedClass().isEmpty() ? teacher.getAssignedClass().get(0).getClassId() : null)
                 .className(!teacher.getAssignedClass().isEmpty() ?
                         teacher.getAssignedClass().stream().map(SchoolClass::getClassName).toList() : List.of())
@@ -164,13 +172,100 @@ public class TeacherServiceImpl implements TeacherService {
                 .orElseThrow(() -> new RuntimeException("Teacher not found with username: " + username));
     }
 
+//    @Override
+//    public TeacherDto createTeacher(TeacherCreateRequest request) {
+//
+//        // ✅ 1. Load existing User
+//        User user = userRepository.findByEmail(request.getEmail())
+//                .orElseThrow(() -> new RuntimeException("User not found with email: " + request.getEmail()));
+//
+//        // ✅ 2. Prepare Teacher entity
+//        Teacher.TeacherBuilder builder = Teacher.builder()
+//                .firstName(request.getFirstName())
+//                .lastName(request.getLastName())
+//                .email(request.getEmail())
+//                .phone(request.getPhone())
+//                .qualification(request.getQualification())
+//                .experienceYears(request.getExperienceYears())
+//                .gender(request.getGender())
+//                .dateOfBirth(request.getDateOfBirth())
+//                .user(user)
+//                .assignedAt(LocalDateTime.now())
+//
+//                .isClassTeacher(request.isClassTeacher());
+//
+//
+//
+//        // ✅ 3. Handle ClassTeacher assignment if applicable
+//        if (request.isClassTeacher()) {
+//            if (request.getClassTeacherId() != null) {
+//                // Load existing ClassTeacher
+//                ClassTeacher classTeacher = classTeacherRepository.findById(request.getClassTeacherId())
+//                        .orElseThrow(() -> new RuntimeException("ClassTeacher not found with ID: " + request.getClassTeacherId()));
+//                builder.classTeacher(classTeacher);
+//            } else if (request.getClassId() != null && request.getSectionId() != null) {
+//                // Create new ClassTeacher if ID not provided
+//                SchoolClass schoolClass = classRepository.findById(request.getClassId())
+//                        .orElseThrow(() -> new RuntimeException("Class not found with ID: " + request.getClassId()));
+//                Section section = sectionRepository.findById(request.getSectionId())
+//                        .orElseThrow(() -> new RuntimeException("Section not found with ID: " + request.getSectionId()));
+//
+//                ClassTeacher newClassTeacher = ClassTeacher.builder()
+//                        .schoolClass(schoolClass)
+//                        .section(section)
+//                        .assignedAt(LocalDateTime.now())
+//                        .build();
+//
+//                classTeacherRepository.save(newClassTeacher); // Persist new ClassTeacher
+//                builder.classTeacher(newClassTeacher);
+//            } else {
+//                throw new RuntimeException("To assign as ClassTeacher, either classTeacherId or both classId and sectionId must be provided.");
+//            }
+//        }
+//
+//        // ✅ 4. Build teacher
+//        Teacher teacher = builder.build();
+//
+//        // ✅ 5. Assign classes
+//        if (request.getAssignedClassIds() != null && !request.getAssignedClassIds().isEmpty()) {
+//            List<SchoolClass> classes = classRepository.findAllById(request.getAssignedClassIds());
+//            teacher.getAssignedClass().addAll(classes);
+//        }
+//
+//        // ✅ 6. Assign sections
+//        if (request.getAssignedSectionIds() != null && !request.getAssignedSectionIds().isEmpty()) {
+//            List<Section> sections = sectionRepository.findAllById(request.getAssignedSectionIds());
+//            teacher.getAssignedSection().addAll(sections);
+//        }
+//        ClassTeacher classTeacher = null;
+//        if (request.isClassTeacher() && request.getClassTeacherId() != null) {
+//            classTeacher = classTeacherRepository.findById(request.getClassTeacherId())
+//                    .orElseThrow(() -> new RuntimeException("ClassTeacher not found with ID: " + request.getClassTeacherId()));
+//        }
+//
+//
+//        // ✅ 7. Save and return DTO
+//        Teacher savedTeacher = teacherRepository.save(teacher);
+//        return mapToDto(savedTeacher);
+//    }
+//
+
+
     @Override
     public TeacherDto createTeacher(TeacherCreateRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
-
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getEmail()));
-        // Build Teacher entity
+
+        //IsClassTeacher
+        SchoolClass schoolClass = classRepository.findById(request.getClassId())
+                .orElseThrow(() -> new RuntimeException("class not found by get ID " + request.getClassId()));
+
+        Section section = sectionRepository.findById(request.getSectionId())
+                .orElseThrow(() -> new RuntimeException("section not found by get ID " + request.getSectionId()));
+
+        ClassTeacher build = ClassTeacher.builder().schoolClass(schoolClass).section(section).build();
+        classTeacherRepository.save(build);
         Teacher teacher = Teacher.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -181,7 +276,10 @@ public class TeacherServiceImpl implements TeacherService {
                 .gender(request.getGender())
                 .dateOfBirth(request.getDateOfBirth())
                 .user(user)
+                .isClassTeacher(request.isClassTeacher())
+                .classTeacher(build)
                 .assignedAt(LocalDateTime.now())
+
                 .build();
 
         // Assign Classes
@@ -195,6 +293,8 @@ public class TeacherServiceImpl implements TeacherService {
             List<Section> sections = sectionRepository.findAllById(request.getAssignedSectionIds());
             teacher.getAssignedSection().addAll(sections);
         }
+
+
 
         // Save teacher (ID will be generated here)
         Teacher savedTeacher = teacherRepository.save(teacher);

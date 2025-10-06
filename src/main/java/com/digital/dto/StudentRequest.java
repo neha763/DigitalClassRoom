@@ -50,6 +50,8 @@ public class StudentRequest {
 
     @NotNull(message = "Class ID is required")
     private Long classId;
+    private String admissionNumber;
+    private String academicYear;
 
     @NotNull(message = "Section ID is required")
     private Long sectionId;

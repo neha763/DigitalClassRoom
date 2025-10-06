@@ -41,9 +41,11 @@
 //}
 package com.digital.dto;
 
+import com.digital.entity.ClassTeacher;
 import com.digital.entity.Section;
 import com.digital.entity.SchoolClass;
 import com.digital.entity.Teacher;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -71,6 +73,11 @@ public class TeacherDto {
     private List<String> classNames;
     private List<Long> sectionIds;
     private List<String> sectionNames;
+    private boolean isClassTeacher;
+
+    @JsonIgnore
+    private ClassTeacher classTeacher; // ✅ Add this line
+
 
     // Constructor to map Teacher entity to DTO
     public TeacherDto(Teacher teacher) {

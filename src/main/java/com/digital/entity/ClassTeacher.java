@@ -1,4 +1,5 @@
 package com.digital.entity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -10,28 +11,24 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
+@JsonIgnoreProperties("schoolclass")
 public class ClassTeacher {
 
-
-        @Id
+       @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
-
-        private Long classId;
-        private Long sectionId;
-        @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "teacher_id")
-        private Teacher teacher;
+        private Long classTeacherId;
 
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "classId")
+    private SchoolClass schoolClass;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sectionId")
+    private Section section;
         private LocalDateTime assignedAt;
 
-        @PrePersist
-        public void onAssign() {
-            this.assignedAt = LocalDateTime.now();
-        }
+
     }
 
 
