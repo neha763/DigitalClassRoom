@@ -70,7 +70,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                     .studentId(sub.getStudent().getStudentRegId())
                     .answers(sub.getAnswers())
                     .submittedAt(sub.getSubmittedAt())
-                    .status(sub.getStatus().name())
+                    .status(SubmissionStatus.valueOf(sub.getStatus().name()))
                     .obtainedMarks(sub.getStatus() == SubmissionStatus.EVALUATED ? sub.getObtainedMarks() : null)
                     .subjectMarks(subjectMarks)
                     .build();
@@ -114,7 +114,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                 .answers(submission.getAnswers())
                 .submittedAt(submission.getSubmittedAt())
                 .obtainedMarks(submission.getObtainedMarks())
-                .status(submission.getStatus().name())
+                .status(SubmissionStatus.valueOf(submission.getStatus().name()))
                 .build();
     }
 

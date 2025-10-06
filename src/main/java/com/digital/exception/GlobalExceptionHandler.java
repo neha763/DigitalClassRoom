@@ -125,14 +125,14 @@ public ResponseEntity<Map<String, String>> handleValidationExceptions(
     }
 
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            errors.put(error.getField(), error.getDefaultMessage());
-        }
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<>();
+//        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+//            errors.put(error.getField(), error.getDefaultMessage());
+//        }
+//        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+//    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CustomResponse> handleGenericException(Exception ex, HttpServletRequest request) {
