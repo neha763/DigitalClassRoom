@@ -30,13 +30,16 @@ public class FeeServiceImpl implements FeeService {
     @Override
     public FeeStructureDTO getFeeStructureByClass(Long classId, String academicYear) {
         FeeStructure fs = repo.findByClassIdAndAcademicYear(classId, academicYear)
-                .orElseThrow(() -> new RuntimeException("Fee structure not found for classId=" + classId + ", year=" + academicYear));
+                .orElseThrow(() -> new RuntimeException(
+                        "Fee structure not found for classId=" + classId + ", year=" + academicYear));
         return toDTO(fs);
     }
 
     @Override
     public List<FeeStructureDTO> getAllFeeStructures() {
-        return repo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+        return repo.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -44,7 +47,6 @@ public class FeeServiceImpl implements FeeService {
         FeeStructure existing = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Fee structure not found with id=" + id));
 
-        // Update fields
         existing.setClassId(dto.getClassId());
         existing.setAcademicYear(dto.getAcademicYear());
         existing.setTuitionFee(dto.getTuitionFee());
@@ -62,6 +64,26 @@ public class FeeServiceImpl implements FeeService {
         FeeStructure existing = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Fee structure not found with id=" + id));
         repo.delete(existing);
+    }
+
+    @Override
+    public List<FeeStructureDTO> getByClassAndYear(Long classId, String year) {
+        return repo.findByClassIdAndAcademicYear(classId, year)
+                .map(this::toDTO)
+                .stream()
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FeeStructure> findByClassId(Long classId) {
+        return repo.findByClassId(classId);
+    }
+
+    @Override
+    public List<FeeStructureDTO> getByClass(Long classId) {
+        return repo.findByClassId(classId).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
 

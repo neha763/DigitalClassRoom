@@ -1,17 +1,16 @@
 package com.digital.dto;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PaymentDTO {
 
     private Long paymentId;
@@ -23,28 +22,13 @@ public class PaymentDTO {
     private Long studentId;
 
     @NotNull(message = "Amount paid is required")
-    @DecimalMin(value = "0.01", inclusive = true, message = "Amount must be at least 0.01")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Amount paid must be positive")
     private BigDecimal amountPaid;
 
-    @NotBlank(message = "Payment mode is required")
-    @Pattern(
-            regexp = "CASH|CARD|UPI|PAYMENT_GATEWAY",
-            message = "Payment mode must be one of: CASH, CARD, UPI, PAYMENT_GATEWAY"
-    )
-    private String paymentMode; // CASH, CARD, UPI, PAYMENT_GATEWAY
-
-    @Size(max = 100, message = "Transaction ID cannot exceed 100 characters")
-    private String transactionId; // generated automatically for responses
-
-    @Size(max = 100, message = "Gateway reference ID cannot exceed 100 characters")
-    private String gatewayReferenceId; // for gateway payments
-
-    @NotBlank(message = "Payment status is required")
-    @Pattern(
-            regexp = "SUCCESS|FAILED|PENDING|REFUNDED",
-            message = "Status must be one of: SUCCESS, FAILED, PENDING, REFUNDED"
-    )
-    private String status; // SUCCESS, FAILED, PENDING, REFUNDED
-
-
+    @NotNull(message = "Payment mode is required")
+    private String paymentMode;
+@Column(nullable = false,unique = true)
+    private String transactionId;
+    private String gatewayReferenceId;
+    private String status;
 }

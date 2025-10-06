@@ -81,11 +81,12 @@ public class AppConfig {
                         .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers("/api/teacher/**").hasRole("ADMIN")
                         .requestMatchers("/api/class/**", "/api/section/**").hasRole("ADMIN")
-                        .requestMatchers("/api/students/admin/**").hasRole("ADMIN")
+                        //.requestMatchers("/api/students/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/students/**").hasRole("STUDENT")
                         .requestMatchers("/api/admin/**", "/api/gateway**").hasRole("ADMIN")
                         .requestMatchers("/api/payment/**").hasRole("STUDENT")
                         .requestMatchers("/api/studentFee/**").hasRole("STUDENT")
+
                         .requestMatchers("/api/**").authenticated()
                 )
                 .exceptionHandling(ex -> ex
@@ -107,6 +108,7 @@ public class AppConfig {
                     "Unauthorized - Please log in",
                     request.getRequestURI()
             );
+
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             try (OutputStream out = response.getOutputStream()) {

@@ -12,7 +12,8 @@ import java.time.LocalDate;
 @Builder
 public class StudentRequest {
 
-    private Long userId;  // Existing User ID (already created)
+    @NotNull(message = "User ID is required")
+    private Long userId;
 
     @NotBlank(message = "Roll number is required")
     @Pattern(regexp = "^[A-Z0-9]{5,15}$", message = "Roll number must be alphanumeric (5–15 chars)")
@@ -52,4 +53,7 @@ public class StudentRequest {
 
     @NotNull(message = "Section ID is required")
     private Long sectionId;
+
+    @NotNull(message = "Fee ID is required")
+    private Long feeId;
 }

@@ -6,6 +6,7 @@ import com.digital.dto.PaymentDTO;
 import com.digital.servicei.FeeService;
 import com.digital.servicei.InvoiceService;
 import com.digital.servicei.PaymentService;
+import com.digital.servicei.ReceiptService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,16 +16,22 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/studentFee")
+@CrossOrigin(origins = "*")
 public class StudentFeeController {
 
     private final FeeService feeService;
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
+    private final ReceiptService receiptService;
 
-    public StudentFeeController(FeeService feeService, InvoiceService invoiceService, PaymentService paymentService) {
+    public StudentFeeController(FeeService feeService,
+                                InvoiceService invoiceService,
+                                PaymentService paymentService,
+                                ReceiptService receiptService) {
         this.feeService = feeService;
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
+        this.receiptService = receiptService;
     }
 
     @PreAuthorize("hasRole('STUDENT')")
@@ -70,5 +77,20 @@ public class StudentFeeController {
     public ResponseEntity<Void> deletePayment(@PathVariable Long id) {
         paymentService.deletePayment(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ===================== RECEIPT DOWNLOAD =====================
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/invoices/{invoiceId}/download-receipt")
+    public ResponseEntity<byte[]> downloadReceipt(@PathVariable Long invoiceId) {
+        try {
+            byte[] pdfBytes = receiptService.generateReceipt(invoiceId);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=receipt_" + invoiceId + ".pdf")
+                    .header("Content-Type", "application/pdf")
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

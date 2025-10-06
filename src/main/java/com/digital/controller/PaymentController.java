@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/payment")
+@CrossOrigin(origins = "*")
 public class PaymentController {
 
     private final PaymentService paymentService;
@@ -25,9 +26,9 @@ public class PaymentController {
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/pay")
     public ResponseEntity<PaymentDTO> pay(@Valid @RequestBody PaymentDTO dto) {
-        PaymentDTO p = paymentService.makePayment(dto);
-        return ResponseEntity.status(201).body(p);
+        return ResponseEntity.status(201).body(paymentService.makePayment(dto));
     }
+
 
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/student/{studentId}")

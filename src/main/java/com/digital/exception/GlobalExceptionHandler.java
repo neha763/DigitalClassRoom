@@ -15,37 +15,31 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // ---------------- Resource Not Found ----------------
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<CustomResponse> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
     }
 
-    // ---------------- Duplicate Resource ----------------
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<CustomResponse> handleDuplicateResource(DuplicateResourceException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
     }
 
-    // ---------------- Unauthorized ----------------
     @ExceptionHandler(CustomUnauthorizedException.class)
     public ResponseEntity<CustomResponse> handleUnauthorized(CustomUnauthorizedException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI());
     }
 
-    // ---------------- Forbidden ----------------
     @ExceptionHandler(CustomForbiddenException.class)
     public ResponseEntity<CustomResponse> handleForbidden(CustomForbiddenException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI());
     }
 
-    // ---------------- Payment Errors ----------------
     @ExceptionHandler({PaymentException.class, InvalidPaymentException.class})
     public ResponseEntity<CustomResponse> handlePaymentExceptions(RuntimeException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
     }
 
-    // ---------------- Validation Errors ----------------
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -55,13 +49,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    // ---------------- Generic / Unexpected Errors ----------------
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CustomResponse> handleGenericException(Exception ex, HttpServletRequest request) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage() != null ? ex.getMessage() : "Internal server error", request.getRequestURI());
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.getMessage() != null ? ex.getMessage() : "Internal server error",
+                request.getRequestURI()
+        );
     }
 
-    // ---------------- Helper Method ----------------
     private ResponseEntity<CustomResponse> buildResponse(HttpStatus status, String message, String path) {
         CustomResponse response = new CustomResponse(
                 LocalDateTime.now(),

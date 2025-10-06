@@ -15,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
+@CrossOrigin(origins = "*")
 public class AdminFeeController {
 
     private final FeeService feeService;
@@ -53,11 +54,16 @@ public class AdminFeeController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/fees/{classId}")
-    public ResponseEntity<FeeStructureDTO> getFeeStructure(
+    public ResponseEntity<List<FeeStructureDTO>> getFeeStructures(
             @PathVariable Long classId,
-            @RequestParam String year) {
-        return ResponseEntity.ok(feeService.getFeeStructureByClass(classId, year));
+            @RequestParam(required = false) String year) {
+
+        if (year != null) {
+            return ResponseEntity.ok(feeService.getByClassAndYear(classId, year));
+        }
+        return ResponseEntity.ok(feeService.getByClass(classId));
     }
+
 
 
     @PreAuthorize("hasRole('ADMIN')")

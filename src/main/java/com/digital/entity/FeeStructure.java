@@ -1,10 +1,12 @@
 package com.digital.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "fee_structures",
@@ -18,7 +20,7 @@ public class FeeStructure {
 
     @NotNull
     @Column(name = "class_id", nullable = false)
-    private Long classId; // FK to Class (store id only; use relationship if Class entity exists)
+    private Long classId;
 
     @NotBlank
     @Size(max = 20)
@@ -27,43 +29,33 @@ public class FeeStructure {
 
     @NotNull
     @DecimalMin(value = "0.00", inclusive = true)
-    @Column(name = "tuition_fee", nullable = false, precision = 12, scale = 2)
     private BigDecimal tuitionFee = BigDecimal.ZERO;
 
     @NotNull
     @DecimalMin(value = "0.00", inclusive = true)
-    @Column(name = "exam_fee", nullable = false, precision = 12, scale = 2)
     private BigDecimal examFee = BigDecimal.ZERO;
 
     @NotNull
     @DecimalMin(value = "0.00", inclusive = true)
-    @Column(name = "transport_fee", nullable = false, precision = 12, scale = 2)
     private BigDecimal transportFee = BigDecimal.ZERO;
 
     @NotNull
     @DecimalMin(value = "0.00", inclusive = true)
-    @Column(name = "library_fee", nullable = false, precision = 12, scale = 2)
     private BigDecimal libraryFee = BigDecimal.ZERO;
 
     @NotNull
     @DecimalMin(value = "0.00", inclusive = true)
-    @Column(name = "other_charges", nullable = false, precision = 12, scale = 2)
     private BigDecimal otherCharges = BigDecimal.ZERO;
 
     @NotNull
     @DecimalMin(value = "0.00", inclusive = true)
-    @Column(name = "total_amount", nullable = false, precision = 14, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
     @PastOrPresent
-    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     @PastOrPresent
-    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
-
-    public FeeStructure() {}
 
     @PrePersist
     public void prePersist() {
@@ -90,6 +82,14 @@ public class FeeStructure {
     private BigDecimal safe(BigDecimal b) {
         return b == null ? BigDecimal.ZERO : b;
     }
+
+    @OneToMany(mappedBy = "feeStructure", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Student> students = new ArrayList<>();
+
+    @OneToMany(mappedBy = "feeStructure", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Invoice> invoices = new ArrayList<>();
 
     public Long getFeeId() {
         return feeId;
@@ -178,4 +178,21 @@ public class FeeStructure {
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public List<Student> getStudents() {
+        return students;
+    }
+
+    public void setStudents(List<Student> students) {
+        this.students = students;
+    }
+
+    public List<Invoice> getInvoices() {
+        return invoices;
+    }
+
+    public void setInvoices(List<Invoice> invoices) {
+        this.invoices = invoices;
+    }
 }
+

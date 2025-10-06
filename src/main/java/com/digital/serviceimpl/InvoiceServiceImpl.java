@@ -3,9 +3,11 @@ package com.digital.serviceimpl;
 import com.digital.dto.InvoiceDTO;
 import com.digital.entity.FeeStructure;
 import com.digital.entity.Invoice;
+import com.digital.entity.Student;
 import com.digital.enums.InvoiceStatus;
 import com.digital.repository.FeeStructureRepository;
 import com.digital.repository.InvoiceRepository;
+import com.digital.repository.StudentRepository;
 import com.digital.servicei.InvoiceService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +23,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepo;
     private final FeeStructureRepository feeRepo;
+    private final StudentRepository studentRepo;
 
-    public InvoiceServiceImpl(InvoiceRepository invoiceRepo, FeeStructureRepository feeRepo) {
+    public InvoiceServiceImpl(InvoiceRepository invoiceRepo,
+                              FeeStructureRepository feeRepo,
+                              StudentRepository studentRepo) {
         this.invoiceRepo = invoiceRepo;
         this.feeRepo = feeRepo;
+        this.studentRepo = studentRepo;
     }
 
     @Override
@@ -32,16 +38,18 @@ public class InvoiceServiceImpl implements InvoiceService {
         FeeStructure fs = feeRepo.findById(feeId)
                 .orElseThrow(() -> new RuntimeException("Fee structure not found"));
 
+        Student student = studentRepo.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
         Invoice invoice = new Invoice();
-        invoice.setStudentId(studentId);
-        invoice.setFeeId(fs.getFeeId());
+        invoice.setStudent(student);
+        invoice.setFeeStructure(fs);
         invoice.setTotalDue(fs.getTotalAmount());
         invoice.setDueDate(LocalDate.parse(dueDateStr));
         invoice.setStatus(InvoiceStatus.UNPAID);
         invoice.setAmountPaid(BigDecimal.ZERO);
 
-        Invoice saved = invoiceRepo.save(invoice);
-        return toDTO(saved);
+        return toDTO(invoiceRepo.save(invoice));
     }
 
     @Override
@@ -53,7 +61,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public List<InvoiceDTO> getInvoicesByStudent(Long studentId) {
-        return invoiceRepo.findByStudentId(studentId).stream()
+        Student student = studentRepo.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        return invoiceRepo.findByStudent(student).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -76,7 +87,9 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .orElseThrow(() -> new RuntimeException("Invoice not found"));
 
         if (studentId != null) {
-            invoice.setStudentId(studentId);
+            Student student = studentRepo.findById(studentId)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+            invoice.setStudent(student);
         }
 
         if (dueDateStr != null) {
@@ -91,18 +104,41 @@ public class InvoiceServiceImpl implements InvoiceService {
     public void deleteInvoice(Long id) {
         Invoice invoice = invoiceRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Invoice not found"));
-
         invoiceRepo.delete(invoice);
+    }
+
+
+    public Invoice getOrCreateInvoice(Long studentId, Long feeId, String dueDateStr) {
+        Student student = studentRepo.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        FeeStructure fee = feeRepo.findById(feeId)
+                .orElseThrow(() -> new RuntimeException("Fee structure not found"));
+
+        List<Invoice> existing = invoiceRepo.findByStudentAndFeeStructureAndStatus(student, fee, InvoiceStatus.UNPAID);
+        if (!existing.isEmpty()) {
+            return existing.get(0);
+        }
+
+        Invoice invoice = new Invoice();
+        invoice.setStudent(student);
+        invoice.setFeeStructure(fee);
+        invoice.setTotalDue(fee.getTotalAmount());
+        invoice.setDueDate(LocalDate.parse(dueDateStr));
+        invoice.setStatus(InvoiceStatus.UNPAID);
+        invoice.setAmountPaid(BigDecimal.ZERO);
+
+        return invoiceRepo.save(invoice);
     }
 
     private InvoiceDTO toDTO(Invoice inv) {
         InvoiceDTO dto = new InvoiceDTO();
         dto.setInvoiceId(inv.getInvoiceId());
-        dto.setStudentId(inv.getStudentId());
-        dto.setFeeId(inv.getFeeId());
+        dto.setStudentId(inv.getStudent().getStudentRegId());
+        dto.setFeeId(inv.getFeeStructure().getFeeId());
         dto.setTotalDue(inv.getTotalDue());
         dto.setDueDate(inv.getDueDate());
-        dto.setStatus(inv.getStatus().name());
+        dto.setStatus(inv.getStatus());
         dto.setAmountPaid(inv.getAmountPaid());
         return dto;
     }

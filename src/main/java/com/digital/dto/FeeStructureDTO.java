@@ -38,11 +38,9 @@ public class FeeStructureDTO {
     @DecimalMin(value = "0.00", inclusive = true, message = "Other charges cannot be negative")
     private BigDecimal otherCharges = BigDecimal.ZERO;
 
-    // Total amount is usually computed; optional to validate
     @DecimalMin(value = "0.00", inclusive = true, message = "Total amount cannot be negative")
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
-    // Getters & Setters
     public Long getFeeId() { return feeId; }
     public void setFeeId(Long feeId) { this.feeId = feeId; }
 

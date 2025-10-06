@@ -7,8 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "invoices",
@@ -17,52 +19,47 @@ public class Invoice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "invoice_id")
     private Long invoiceId;
 
     @NotNull
-    @Column(name = "student_id", nullable = false)
-    private Long studentId; // FK to Student
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
 
     @NotNull
-    @Column(name = "fee_id", nullable = false)
-    private Long feeId; // FK to FeeStructure
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fee_id", nullable = false)
+    private FeeStructure feeStructure;
 
     @NotNull
     @DecimalMin(value = "0.00", inclusive = true)
-    @Column(name = "total_due", nullable = false, precision = 14, scale = 2)
     private BigDecimal totalDue = BigDecimal.ZERO;
 
     @NotNull
-    @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
     private InvoiceStatus status = InvoiceStatus.UNPAID;
 
     @PastOrPresent
-    @Column(name = "generated_at", nullable = false, updatable = false)
     private Instant generatedAt;
 
     @PastOrPresent
-    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
     @NotNull
     @DecimalMin(value = "0.00", inclusive = true)
-    @Column(name = "amount_paid", nullable = false, precision = 14, scale = 2)
     private BigDecimal amountPaid = BigDecimal.ZERO;
 
-    public Invoice() {}
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Payment> payments = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
         Instant now = Instant.now();
         this.generatedAt = now;
         this.updatedAt = now;
-        if (this.status == null) this.status = InvoiceStatus.UNPAID;
         if (this.amountPaid == null) this.amountPaid = BigDecimal.ZERO;
     }
 
@@ -70,7 +67,6 @@ public class Invoice {
     public void preUpdate() {
         this.updatedAt = Instant.now();
     }
-
 
     public void recomputeStatus() {
         if (amountPaid == null) amountPaid = BigDecimal.ZERO;
@@ -91,75 +87,33 @@ public class Invoice {
         }
     }
 
-    public Long getInvoiceId() {
-        return invoiceId;
-    }
+    public Long getInvoiceId() { return invoiceId; }
+    public void setInvoiceId(Long invoiceId) { this.invoiceId = invoiceId; }
 
-    public void setInvoiceId(Long invoiceId) {
-        this.invoiceId = invoiceId;
-    }
+    public Student getStudent() { return student; }
+    public void setStudent(Student student) { this.student = student; }
 
-    public Long getStudentId() {
-        return studentId;
-    }
+    public FeeStructure getFeeStructure() { return feeStructure; }
+    public void setFeeStructure(FeeStructure feeStructure) { this.feeStructure = feeStructure; }
 
-    public void setStudentId(Long studentId) {
-        this.studentId = studentId;
-    }
+    public BigDecimal getTotalDue() { return totalDue; }
+    public void setTotalDue(BigDecimal totalDue) { this.totalDue = totalDue; }
 
-    public Long getFeeId() {
-        return feeId;
-    }
+    public LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
 
-    public void setFeeId(Long feeId) {
-        this.feeId = feeId;
-    }
+    public InvoiceStatus getStatus() { return status; }
+    public void setStatus(InvoiceStatus status) { this.status = status; }
 
-    public BigDecimal getTotalDue() {
-        return totalDue;
-    }
+    public Instant getGeneratedAt() { return generatedAt; }
+    public void setGeneratedAt(Instant generatedAt) { this.generatedAt = generatedAt; }
 
-    public void setTotalDue(BigDecimal totalDue) {
-        this.totalDue = totalDue;
-    }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
+    public BigDecimal getAmountPaid() { return amountPaid; }
+    public void setAmountPaid(BigDecimal amountPaid) { this.amountPaid = amountPaid; }
 
-    public void setDueDate(LocalDate dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public InvoiceStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(InvoiceStatus status) {
-        this.status = status;
-    }
-
-    public Instant getGeneratedAt() {
-        return generatedAt;
-    }
-
-    public void setGeneratedAt(Instant generatedAt) {
-        this.generatedAt = generatedAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public BigDecimal getAmountPaid() {
-        return amountPaid;
-    }
-
-    public void setAmountPaid(BigDecimal amountPaid) {
-        this.amountPaid = amountPaid;
-    }
+    public List<Payment> getPayments() { return payments; }
+    public void setPayments(List<Payment> payments) { this.payments = payments; }
 }
