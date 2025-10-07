@@ -70,6 +70,11 @@ public class Teacher {
 
     @Column(name = "assigned_at")
     private LocalDateTime assignedAt;
+    private boolean isClassTeacher;
+
+    @OneToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="classTeacherId")
+    private ClassTeacher classTeacher;
 
 }
  
