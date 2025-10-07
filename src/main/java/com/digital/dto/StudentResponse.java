@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
@@ -28,15 +29,20 @@ public class StudentResponse {
     private String state;
     private String country;
     private String pinCode;
+
     private Long classId;
     private String className;
     private Long sectionId;
     private String sectionName;
+
+    private Long feeId;
+
     private LocalDateTime enrolledAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     private String username;
+
     public static StudentResponse fromEntity(Student student) {
         return StudentResponse.builder()
                 .studentRegId(student.getStudentRegId())
@@ -57,10 +63,11 @@ public class StudentResponse {
                 .className(student.getSchoolClass() != null ? student.getSchoolClass().getClassName() : null)
                 .sectionId(student.getSection() != null ? student.getSection().getSectionId() : null)
                 .sectionName(student.getSection() != null ? student.getSection().getSectionName() : null)
+                .feeId(student.getFeeStructure() != null ? student.getFeeStructure().getFeeId() : null) // ✅ set feeId
+                .enrolledAt(student.getEnrolledAt())
                 .createdAt(student.getCreatedAt())
                 .updatedAt(student.getUpdatedAt())
                 .username(student.getUser() != null ? student.getUser().getUsername() : null)
                 .build();
     }
-
 }

@@ -146,8 +146,9 @@ public class AppConfig {
                         // students
                         .requestMatchers("/api/students/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/students/**").hasRole("STUDENT")
-
-                        // any other API requires auth
+                        .requestMatchers("/api/admin/**", "/api/gateway**").hasRole("ADMIN")
+                        .requestMatchers("/api/payment/**").hasRole("STUDENT")
+                        .requestMatchers("/api/studentFee/**").hasRole("STUDENT")
                         .requestMatchers("/api/**").authenticated()
                 )
                 .exceptionHandling(ex -> ex

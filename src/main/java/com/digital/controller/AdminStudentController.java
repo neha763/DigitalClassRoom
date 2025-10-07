@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin("*")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/students/admin")
 @RequiredArgsConstructor
@@ -24,8 +24,8 @@ public class AdminStudentController {
    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<StudentResponse> createStudent(@RequestBody StudentRequest request) {
-        User user = new User(); // In real flow, create user with role=STUDENT
-        user.setUserId(1L); // example
+        User user = new User();
+        user.setUserId(1L);
         return ResponseEntity.ok(studentService.createStudent(request));
     }
 
