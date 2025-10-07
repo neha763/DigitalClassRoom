@@ -21,7 +21,7 @@ public class AdminStudentController {
 
     private final StudentService studentService;
 
-   @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<StudentResponse> createStudent(@RequestBody StudentRequest request) {
         User user = new User();
