@@ -7,6 +7,8 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "students")
@@ -19,8 +21,7 @@ public class Student {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long studentRegId;
-
+    private Long studentRegId;  // primary key
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
@@ -81,12 +82,15 @@ public class Student {
 
     @Pattern(regexp = "^[0-9]{5,10}$")
     private String pinCode;
+
     @ManyToOne
     @JoinColumn(name = "class_id")
     private SchoolClass schoolClass;
+
     @ManyToOne
     @JoinColumn(name = "section_id")
     private Section section;
+
     private LocalDateTime enrolledAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -95,4 +99,28 @@ public class Student {
     @JoinColumn(name = "teacher_id")
     @JsonIgnore
     private Teacher teacher;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fee_id", nullable = false)
+    private FeeStructure feeStructure;
+
+    // Relations
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Invoice> invoices = new ArrayList<>();
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Payment> payments = new ArrayList<>();
+
+    // ✅ Convenience methods for Payment mapping
+    public Long getStudentId() {
+        return this.studentRegId;
+    }
+
+    public void setStudentId(Long studentId) {
+        this.studentRegId = studentId;
+    }
+
+    public String getName() {
+        return firstName + " " + lastName;
+    }
 }
