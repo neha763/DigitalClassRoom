@@ -19,15 +19,10 @@ public interface StudentService {
     List<StudentResponse> getStudentsByClass(Long classId, Long sectionId);
     StudentResponse getStudentClassDetails(Long studentId);
     Student getStudentByUsername(String username);
-
-    Student getStudentById(Long studentId);
-
-
     StudentResponse updateMyProfile(StudentProfileUpdateRequest request);
     StudentResponse getMyProfile();
     StudentResponse getMyProfile(String username);
     Optional<Student> findByUserUsername(String username);
     Optional<Student> findByUsername(String username);
-
 
 }
