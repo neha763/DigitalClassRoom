@@ -1,5 +1,8 @@
 package com.digital.enums;
 
 public enum SubmissionStatus {
-    PENDING, EVALUATED,SUBMITTED
+    PENDING,
+    SUBMITTED,
+    GRADED,
+    EVALUATED
 }

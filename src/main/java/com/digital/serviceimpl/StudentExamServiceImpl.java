@@ -1,6 +1,7 @@
 package com.digital.serviceimpl;
 import com.digital.dto.*;
 import com.digital.entity.*;
+import com.digital.enums.ResultStatus;
 import com.digital.enums.SubmissionStatus;
 import com.digital.exception.ResourceNotFoundException;
 import com.digital.repository.*;
@@ -17,6 +18,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.digital.enums.SubmissionStatus;
+
 
 @Service
 @RequiredArgsConstructor
@@ -34,26 +37,27 @@ public class StudentExamServiceImpl implements StudentExamService {
     private final AttendanceRepository attendanceRepository;
     private final TermService termService;
 
-@Override
-public List<UpcomingExamResponse> getExamsForStudent(Long studentId) {
-    Student student = studentRepository.findById(studentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
-    Long classId = student.getSchoolClass().getClassId();
-    Long sectionId = student.getSection().getSectionId();
+    @Override
+    public List<UpcomingExamResponse> getExamsForStudent(Long studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
-    LocalDateTime now = LocalDateTime.now();
+        Long classId = student.getSchoolClass().getClassId();
+        Long sectionId = student.getSection().getSectionId();
 
-    List<Exam> upcomingExams = examRepository.findAll().stream()
-            .filter(e -> e.getSchoolClass().getClassId().equals(classId))
-            .filter(e -> e.getSection().getSectionId().equals(sectionId))
-            .filter(e -> e.getEndTime().isAfter(now)) // <-- include exams that are ongoing
-            .toList();
+        LocalDateTime now = LocalDateTime.now();
 
-    return upcomingExams.stream()
-            .map(this::convertToResponse)
-            .toList();
-}
+        List<Exam> upcomingExams = examRepository.findAll().stream()
+                .filter(e -> e.getSchoolClass().getClassId().equals(classId))
+                .filter(e -> e.getSection().getSectionId().equals(sectionId))
+                .filter(e -> e.getEndTime().isAfter(now)) // <-- include exams that are ongoing
+                .toList();
+
+        return upcomingExams.stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
 
 
     @Override
@@ -83,7 +87,7 @@ public List<UpcomingExamResponse> getExamsForStudent(Long studentId) {
     }
 
     public List<SubmissionResponse> getResults(Long studentId) {
-        return resultRepository.findByStudentId(studentId)
+        return resultRepository.findByStudent_StudentRegId(studentId)
                 .stream()
                 .map(result -> {
                     // Fetch subject-wise report cards linked to this result
@@ -103,17 +107,19 @@ public List<UpcomingExamResponse> getExamsForStudent(Long studentId) {
 
                     return SubmissionResponse.builder()
                             .submissionId(result.getResultId())
-                            .examId(result.getExamId())
-                            .studentId(result.getStudentId())
+                            .examId(result.getExam().getExamId())
+                            .studentId(result.getStudent().getStudentRegId())
                             .obtainedMarks(result.getObtainedMarks())
                             .percentage(result.getPercentage())
                             .grade(result.getGrade())
-                            .status(SubmissionStatus.valueOf(result.getStatus() != null ? result.getStatus().name() : "PENDING"))
+                            .resultStatus(result.getStatus() != null ? result.getStatus() : ResultStatus.PENDING)
                             .subjects(subjectResults)
                             .build();
+
                 })
                 .collect(Collectors.toList());
     }
+
 
     @Override
     public ReportCardResponse getReportCard(Long studentId, String term) {
@@ -233,7 +239,7 @@ public List<UpcomingExamResponse> getExamsForStudent(Long studentId) {
                 .divide(totalMarks, 2, RoundingMode.HALF_UP).toString();
 
         //Long examId = reportCards.get(0).getSubmission().getExam().getExamId();
-        Result result = resultRepository.findByStudentIdAndExamId(studentRegId, examId).orElse(null);
+        Result result = resultRepository.findByStudent_StudentRegIdAndExam_ExamId(studentRegId, examId).orElse(null);
 
         return ReportCardViewDto.builder()
                 .studentRegId(studentRegId)

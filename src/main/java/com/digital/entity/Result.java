@@ -22,17 +22,23 @@ public class Result {
     private Long resultId;
 
 
-    private Long examId;
-    private Long studentId;
+    @ManyToOne
+    @JoinColumn(name = "student_id", referencedColumnName = "studentRegId")
+    private Student student;
+
+    @ManyToOne
+    @JoinColumn(name = "exam_id", referencedColumnName = "examId")
+    private Exam exam;
+
     private BigDecimal obtainedMarks;
+
     private BigDecimal percentage;
+
     private String grade;
 
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10) // ✅ length enough for PASSED, FAILED, PENDING
+    @Column(nullable = false, length = 10)
     private ResultStatus status;
-
 
     private LocalDateTime publishedAt;
 }

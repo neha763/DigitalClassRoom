@@ -1,6 +1,8 @@
 package com.digital.repository;
 
 import com.digital.entity.Assignment;
+import com.digital.entity.SchoolClass;
+import com.digital.entity.Section;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +13,8 @@ import java.util.Optional;
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
     List<Assignment> findByTeacherId(Long teacherId);
     Optional<Assignment> findByAssignmentIdAndTeacherId(Long assignmentId, Long teacherId);
+    List<Assignment> findByClassIdAndSectionId(Long classId, Long sectionId);
+
 
 }
+
