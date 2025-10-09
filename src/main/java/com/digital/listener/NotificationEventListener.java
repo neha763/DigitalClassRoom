@@ -1,15 +1,21 @@
 package com.digital.listener;
 
 import com.digital.entity.ExamNotification;
+import com.digital.entity.PTM;
+import com.digital.entity.ParentStudentMapping;
 import com.digital.enums.NotificationType;
 import com.digital.events.ExamCreatedEvent;
+import com.digital.events.PTMScheduledEvent;
 import com.digital.events.ReportCardGeneratedEvent;
 import com.digital.events.ResultPublishedEvent;
 import com.digital.repository.ExamNotificationRepository;
+import com.digital.repository.ParentStudentMappingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -17,6 +23,7 @@ public class NotificationEventListener {
 
     private final ExamNotificationRepository notificationRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ParentStudentMappingRepository parentStudentMappingRepository;
 
     @EventListener
     public void handleExamCreated(ExamCreatedEvent event) {
@@ -42,6 +49,26 @@ public class NotificationEventListener {
 
         event.studentIds().forEach(id -> sendNotification(id, title, message, NotificationType.REPORT_CARD, event.reportCardId()));
     }
+    @EventListener
+    public void handlePTMScheduled(PTMScheduledEvent event) {
+        PTM ptm = event.ptm();
+
+        event.studentIds().forEach(studentRegId -> {
+            // Fetch parents of this student
+            List<ParentStudentMapping> mappings = parentStudentMappingRepository.findByStudent_StudentRegId(studentRegId);
+
+            mappings.forEach(mapping -> {
+                Long parentUserId = mapping.getParent().getUser().getUserId();
+                String title = "New PTM Scheduled";
+                String message = "PTM '" + ptm.getTitle() + "' scheduled for " +
+                        mapping.getStudent().getFirstName() + " " +
+                        mapping.getStudent().getLastName() + " on " + ptm.getMeetingDateTime();
+
+                sendNotification(parentUserId, title, message, NotificationType.PTM, ptm.getPtmId());
+            });
+        });
+    }
+
 
     private void sendNotification(Long userId, String title, String message, NotificationType type, Long refId) {
         ExamNotification notification = ExamNotification.builder()

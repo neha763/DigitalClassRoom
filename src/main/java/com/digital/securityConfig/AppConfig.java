@@ -139,10 +139,12 @@ public class AppConfig {
 
                         // teacher APIs
                         .requestMatchers("/api/teacher/**").hasRole("ADMIN")
-
+                          //parent
+                                .requestMatchers("/parent/**").hasRole("PARENT")
                         // class/section
                         .requestMatchers("/api/class/**", "/api/section/**").hasRole("ADMIN")
-
+                        //assignment
+                        .requestMatchers("/teacher/assignments/**").hasRole("TEACHER")
                         // students
                         .requestMatchers("/api/students/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/students/**").hasRole("STUDENT")

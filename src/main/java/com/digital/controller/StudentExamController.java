@@ -63,7 +63,7 @@ import com.itextpdf.io.font.constants.StandardFonts;
 @RequestMapping("/api/student")
 @RequiredArgsConstructor
 public class StudentExamController {
-private final ReportCardService reportCardService;
+    private final ReportCardService reportCardService;
     private final StudentExamService studentExamService;
     private final StudentService studentService;
     private final ReportCardRepository reportCardRepository;
@@ -95,7 +95,7 @@ private final ReportCardService reportCardService;
         return ResponseEntity.ok(studentExamService.getResults(studentId));
     }
 
-//@GetMapping("/{term}/view")
+    //@GetMapping("/{term}/view")
 //@RolesAllowed({"STUDENT", "PARENT"})
 //public String viewReportCard(@PathVariable String term,
 //                             @RequestParam Long studentRegId,
@@ -105,15 +105,15 @@ private final ReportCardService reportCardService;
 //    model.addAttribute("rc", rc);
 //    return "report-card"; // maps to templates/report-card.html
 //}
-@GetMapping("/{term}/view")
-@RolesAllowed({"STUDENT", "PARENT"})
-public ResponseEntity<ReportCardViewDto> viewReportCard(
-        @PathVariable String term,
-        @RequestParam Long studentRegId) {
+    @GetMapping("/{term}/view")
+    @RolesAllowed({"STUDENT", "PARENT"})
+    public ResponseEntity<ReportCardViewDto> viewReportCard(
+            @PathVariable String term,
+            @RequestParam Long studentRegId) {
 
-    ReportCardViewDto rc = studentExamService.getReportCardView(studentRegId, term);
-    return ResponseEntity.ok(rc);
-}
+        ReportCardViewDto rc = studentExamService.getReportCardView(studentRegId, term);
+        return ResponseEntity.ok(rc);
+    }
 
     @GetMapping("/{term}/download")
     @RolesAllowed({"STUDENT", "PARENT"})
@@ -191,7 +191,7 @@ public ResponseEntity<ReportCardViewDto> viewReportCard(
                         .divide(totalMarks, 2, RoundingMode.HALF_UP);
 
                 Long examId = reportCards.get(0).getSubmission().getExam().getExamId();
-                Result result = resultRepository.findByStudentIdAndExamId(studentRegId, examId).orElse(null);
+                Result result = resultRepository.findByStudent_StudentRegIdAndExam_ExamId(studentRegId, examId).orElse(null);
 
                 document.add(new Paragraph("\nSummary").setFont(boldFont));
                 Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{3,2})).useAllAvailableWidth();

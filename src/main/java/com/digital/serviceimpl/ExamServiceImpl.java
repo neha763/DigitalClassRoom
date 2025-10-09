@@ -5,6 +5,7 @@ import com.digital.entity.*;
 import com.digital.enums.ResultStatus;
 import com.digital.enums.SubmissionStatus;
 import com.digital.events.ExamCreatedEvent;
+import com.digital.events.ResultPublishedEvent;
 import com.digital.exception.ResourceNotFoundException;
 import com.digital.repository.*;
 import com.digital.servicei.ExamService;
@@ -37,6 +38,8 @@ public class ExamServiceImpl implements ExamService {
 
     @Autowired
     private ApplicationEventPublisher publisher;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     private StudentRepository studentRepository;
@@ -44,55 +47,55 @@ public class ExamServiceImpl implements ExamService {
     @Autowired
     private TeacherRepository teacherRepository;
 
-@Override
-public ExamResponse createExam(ExamRequest request) {
-    // 1. Fetch related entities
-    var schoolClass = classRepository.findById(request.getClassId())
-            .orElseThrow(() -> new ResourceNotFoundException("Class not found"));
-    var section = sectionRepository.findById(request.getSectionId())
-            .orElseThrow(() -> new ResourceNotFoundException("Section not found"));
-    var subject = subjectRepository.findById(request.getSubjectId())
-            .orElseThrow(() -> new ResourceNotFoundException("Subject not found"));
-    var teacher = teacherRepository.findById(request.getTeacherId())
-            .orElseThrow(() -> new ResourceNotFoundException("Teacher not found"));
+    @Override
+    public ExamResponse createExam(ExamRequest request) {
+        // 1. Fetch related entities
+        var schoolClass = classRepository.findById(request.getClassId())
+                .orElseThrow(() -> new ResourceNotFoundException("Class not found"));
+        var section = sectionRepository.findById(request.getSectionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Section not found"));
+        var subject = subjectRepository.findById(request.getSubjectId())
+                .orElseThrow(() -> new ResourceNotFoundException("Subject not found"));
+        var teacher = teacherRepository.findById(request.getTeacherId())
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found"));
 
-    // 2. Build Exam entity
-    Exam exam = Exam.builder()
-            .examName(request.getExamName())
-            .schoolClass(schoolClass)
-            .section(section)
-            .subject(subject)
-            .teacher(teacher)
-            .examType(request.getExamType())
-            .term(request.getTerm())
-            .startTime(request.getStartTime())
-            .endTime(request.getEndTime())
-            .duration(request.getDuration())
-            .totalMarks(request.getTotalMarks())
-            .build();
+        // 2. Build Exam entity
+        Exam exam = Exam.builder()
+                .examName(request.getExamName())
+                .schoolClass(schoolClass)
+                .section(section)
+                .subject(subject)
+                .teacher(teacher)
+                .examType(request.getExamType())
+                .term(request.getTerm())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .duration(request.getDuration())
+                .totalMarks(request.getTotalMarks())
+                .build();
 
-    // 3. Save to DB
-    Exam savedExam = examRepository.save(exam);
+        // 3. Save to DB
+        Exam savedExam = examRepository.save(exam);
 
-    // 4. Get all student & teacher user IDs from this class
-    List<Long> studentIds = studentRepository.findAllBySchoolClass_ClassIdAndSection_SectionId(
-                    schoolClass.getClassId(), section.getSectionId())
-            .stream().map(student -> student.getUser().getUserId()).toList();
+        // 4. Get all student & teacher user IDs from this class
+        List<Long> studentIds = studentRepository.findAllBySchoolClass_ClassIdAndSection_SectionId(
+                        schoolClass.getClassId(), section.getSectionId())
+                .stream().map(student -> student.getUser().getUserId()).toList();
 
-    List<Long> teacherIds = teacherRepository.findAllByAssignedClass_ClassId(
-                    schoolClass.getClassId())
-            .stream().map(t -> t.getUser().getUserId()).toList();
+        List<Long> teacherIds = teacherRepository.findAllByAssignedClass_ClassId(
+                        schoolClass.getClassId())
+                .stream().map(t -> t.getUser().getUserId()).toList();
 
-    // 5. Publish the event
-    publisher.publishEvent(new ExamCreatedEvent(
-            savedExam.getExamId(),
-            studentIds,
-            teacherIds
-    ));
+        // 5. Publish the event
+        publisher.publishEvent(new ExamCreatedEvent(
+                savedExam.getExamId(),
+                studentIds,
+                teacherIds
+        ));
 
-    // 6. Convert to DTO
-    return convertToResponse(savedExam);
-}
+        // 6. Convert to DTO
+        return convertToResponse(savedExam);
+    }
 
 
 
@@ -182,80 +185,92 @@ public ExamResponse createExam(ExamRequest request) {
         System.out.println("Added " + questions.size() + " questions to exam " + examId);
     }
 
-@Override
-@Transactional
-public void evaluateSubmission(Long examId, Long studentId, Long teacherId, Map<Long, Double> subjectMarks) {
+    @Override
+    @Transactional
+    public void evaluateSubmission(Long examId, Long studentId, Long teacherId, Map<Long, Double> subjectMarks) {
 
-    //Fetch student's exam submission
-    ExamSubmission submission = submissionRepository
-            .findByExam_ExamIdAndStudent_StudentRegId(examId, studentId)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                    "Submission not found for studentId: " + studentId));
+        //Fetch student's exam submission
+        ExamSubmission submission = submissionRepository
+                .findByExam_ExamIdAndStudent_StudentRegId(examId, studentId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Submission not found for studentId: " + studentId));
 
-    BigDecimal totalObtained = BigDecimal.ZERO;
+        BigDecimal totalObtained = BigDecimal.ZERO;
 
-    //Get or create overall Result first (to avoid transient issues in ReportCard)
-    Result result = resultRepository.findByStudentIdAndExamId(studentId, examId)
-            .orElseGet(() -> {
-                Result newResult = Result.builder()
-                        .studentId(studentId)
-                        .examId(examId)
-                        .status(ResultStatus.PENDING) // default status
-                        .build();
-                return resultRepository.saveAndFlush(newResult); // persist immediately
-            });
+        Result result = resultRepository.findByStudent_StudentRegIdAndExam_ExamId(studentId, examId)
+                .orElseGet(() -> {
+                    Student student = studentRepository.findById(studentId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
 
-    // Subject-wise evaluation and report card creation
-    for (Map.Entry<Long, Double> entry : subjectMarks.entrySet()) {
-        Long subjectId = entry.getKey();
-        Double marks = entry.getValue();
+                    Exam exam = examRepository.findById(examId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Exam not found: " + examId));
 
-        Subject subject = subjectRepository.findById(subjectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Subject not found: " + subjectId));
+                    Result newResult = Result.builder()
+                            .student(student)
+                            .exam(exam)
+                            .status(ResultStatus.PENDING) // default status
+                            .build();
 
-        BigDecimal obtained = BigDecimal.valueOf(marks);
-        totalObtained = totalObtained.add(obtained);
+                    return resultRepository.saveAndFlush(newResult);
+                });
 
-        // Create or update ReportCard entry
-        ReportCard reportCard = reportCardRepository
-                .findBySubmission_SubmissionIdAndSubject_SubjectId(submission.getSubmissionId(), subjectId)
-                .orElse(ReportCard.builder()
-                        .submission(submission)
-                        .subject(subject)
-                        .student(submission.getStudent())
-                        .term(submission.getExam().getTerm())
-                        .result(result)
-                        .build());
+        // Subject-wise evaluation and report card creation
+        for (Map.Entry<Long, Double> entry : subjectMarks.entrySet()) {
+            Long subjectId = entry.getKey();
+            Double marks = entry.getValue();
 
-        reportCard.setObtainedMarks(obtained);
-        reportCard.setTotalMarks(subject.getMaxMarks());
-        double percentage = (marks / subject.getMaxMarks().doubleValue()) * 100;
-        reportCard.setPercentage(BigDecimal.valueOf(percentage).setScale(2, RoundingMode.HALF_UP));
-        reportCard.setGrade(computeGrade(percentage));
-        reportCard.setRemarks(generateRemarks(percentage));
+            Subject subject = subjectRepository.findById(subjectId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Subject not found: " + subjectId));
 
-        reportCardRepository.save(reportCard);
+            BigDecimal obtained = BigDecimal.valueOf(marks);
+            totalObtained = totalObtained.add(obtained);
+
+            // Create or update ReportCard entry
+            ReportCard reportCard = reportCardRepository
+                    .findBySubmission_SubmissionIdAndSubject_SubjectId(submission.getSubmissionId(), subjectId)
+                    .orElse(ReportCard.builder()
+                            .submission(submission)
+                            .subject(subject)
+                            .student(submission.getStudent())
+                            .term(submission.getExam().getTerm())
+                            .result(result)
+                            .build());
+
+            reportCard.setObtainedMarks(obtained);
+            reportCard.setTotalMarks(subject.getMaxMarks());
+            double percentage = (marks / subject.getMaxMarks().doubleValue()) * 100;
+            reportCard.setPercentage(BigDecimal.valueOf(percentage).setScale(2, RoundingMode.HALF_UP));
+            reportCard.setGrade(computeGrade(percentage));
+            reportCard.setRemarks(generateRemarks(percentage));
+
+            reportCardRepository.save(reportCard);
+        }
+
+        //Update submission summary
+        submission.setObtainedMarks(totalObtained);
+        submission.setStatus(SubmissionStatus.EVALUATED);
+        submission.setEvaluatedBy(teacherId);
+        submission.setEvaluatedAt(LocalDateTime.now());
+        submissionRepository.save(submission);
+
+        //Update overall Result
+        BigDecimal totalExamMarks = submission.getExam().getTotalMarks();
+        double overallPercentage = (totalObtained.doubleValue() / totalExamMarks.doubleValue()) * 100;
+
+        result.setObtainedMarks(totalObtained);
+        result.setPercentage(BigDecimal.valueOf(overallPercentage).setScale(2, RoundingMode.HALF_UP));
+        result.setGrade(computeGrade(overallPercentage));
+        result.setStatus(overallPercentage >= 35 ? ResultStatus.PASSED : ResultStatus.FAILED);
+        result.setPublishedAt(LocalDateTime.now());
+
+        Result savedResult = resultRepository.save(result);
+        applicationEventPublisher.publishEvent(
+                new ResultPublishedEvent(
+                        savedResult.getResultId(),
+                        List.of(studentId)  // send to this student’s parents
+                )
+        );
     }
-
-    //Update submission summary
-    submission.setObtainedMarks(totalObtained);
-    submission.setStatus(SubmissionStatus.EVALUATED);
-    submission.setEvaluatedBy(teacherId);
-    submission.setEvaluatedAt(LocalDateTime.now());
-    submissionRepository.save(submission);
-
-    //Update overall Result
-    BigDecimal totalExamMarks = submission.getExam().getTotalMarks();
-    double overallPercentage = (totalObtained.doubleValue() / totalExamMarks.doubleValue()) * 100;
-
-    result.setObtainedMarks(totalObtained);
-    result.setPercentage(BigDecimal.valueOf(overallPercentage).setScale(2, RoundingMode.HALF_UP));
-    result.setGrade(computeGrade(overallPercentage));
-    result.setStatus(overallPercentage >= 35 ? ResultStatus.PASSED : ResultStatus.FAILED);
-    result.setPublishedAt(LocalDateTime.now());
-
-    resultRepository.save(result);
-}
 
     //Grade calculation
     private String computeGrade(double percentage) {
@@ -276,11 +291,33 @@ public void evaluateSubmission(Long examId, Long studentId, Long teacherId, Map<
     }
 
 
+    //    @Override
+//    public List<?> getResultsByTeacher(Long teacherId) {
+//        List<Exam> exams = examRepository.findByTeacher_Id(teacherId);
+//        return exams.stream()
+//                .map(e -> "Results for exam " + e.getExamName())
+//                .toList();
+//    }
     @Override
-    public List<?> getResultsByTeacher(Long teacherId) {
-        List<Exam> exams = examRepository.findByTeacher_Id(teacherId);
-        return exams.stream()
-                .map(e -> "Results for exam " + e.getExamName())
-                .toList();
+    public List<ResultResponse> getResultsByTeacher(Long teacherId) {
+        List<Result> results = resultRepository.findByExam_Teacher_Id(teacherId);
+
+        return results.stream()
+                .map(r -> ResultResponse.builder()
+                        .resultId(r.getResultId())
+                        .examId(r.getExam().getExamId())
+                        .studentId(r.getStudent().getStudentRegId())
+                        .obtainedMarks(r.getObtainedMarks())
+                        .percentage(r.getPercentage())
+                        .grade(r.getGrade())
+                        .status(r.getStatus().name())
+                        .publishedAt(r.getPublishedAt())
+                        .studentName(r.getStudent().getFirstName())
+                        .examName(r.getExam().getExamName())
+                        .subjectName(r.getExam().getSubject().getSubjectName())
+                        .build())
+                .collect(Collectors.toList());
     }
+
+
 }

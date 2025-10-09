@@ -70,13 +70,14 @@ public class SubmissionServiceImpl implements SubmissionService {
                     .studentId(sub.getStudent().getStudentRegId())
                     .answers(sub.getAnswers())
                     .submittedAt(sub.getSubmittedAt())
-                    .status(SubmissionStatus.valueOf(sub.getStatus().name()))
+                    .assignmentStatus(sub.getStatus() != null ? sub.getStatus() : SubmissionStatus.PENDING)
                     .obtainedMarks(sub.getStatus() == SubmissionStatus.EVALUATED ? sub.getObtainedMarks() : null)
                     .subjectMarks(subjectMarks)
                     .build();
 
         }).collect(Collectors.toList());
     }
+
 
     @Override
     public void submitExam(Long examId, Long studentId, SubmissionRequest request) {
@@ -114,7 +115,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                 .answers(submission.getAnswers())
                 .submittedAt(submission.getSubmittedAt())
                 .obtainedMarks(submission.getObtainedMarks())
-                .status(SubmissionStatus.valueOf(submission.getStatus().name()))
+                .assignmentStatus(submission.getStatus() != null ? submission.getStatus() : SubmissionStatus.PENDING)
                 .build();
     }
 
