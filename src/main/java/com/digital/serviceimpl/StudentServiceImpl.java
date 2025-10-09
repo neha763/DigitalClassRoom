@@ -27,6 +27,7 @@ public class StudentServiceImpl implements StudentService {
     private final SectionRepository sectionRepository;
     private final FeeStructureRepository feeStructureRepository;
 
+    // ---------------------- CREATE ----------------------
     @Override
     public StudentResponse createStudent(StudentRequest request) {
         User user = userRepository.findById(request.getUserId())
@@ -60,6 +61,7 @@ public class StudentServiceImpl implements StudentService {
 
         Section section = sectionRepository.findById(request.getSectionId())
                 .orElseThrow(() -> new RuntimeException("Section not found with ID: " + request.getSectionId()));
+
         FeeStructure feeStructure = feeStructureRepository.findById(request.getFeeId())
                 .orElseThrow(() -> new RuntimeException("Invalid Fee ID"));
 
@@ -71,6 +73,8 @@ public class StudentServiceImpl implements StudentService {
                 .admissionNumber(request.getAdmissionNumber())
                 .academicYear(request.getAcademicYear())
                 .lastName(request.getLastName())
+                .admissionNumber(request.getAdmissionNumber())
+                .academicYear(request.getAcademicYear())
                 .email(request.getEmail())
                 .mobileNumber(request.getMobileNumber())
                 .dateOfBirth(request.getDateOfBirth())
@@ -88,13 +92,24 @@ public class StudentServiceImpl implements StudentService {
                 .build();
 
         return StudentResponse.fromEntity(studentRepository.save(student));
+
     }
+
+    @Override
+    public StudentResponse createStudent(StudentRequest request, User user) {
+        // Optional implementation if user object is already available
+        return createStudent(request);
+    }
+
+    // ---------------------- UPDATE ----------------------
+
+    }
+
 
 
     @Override
     public StudentResponse updateStudent(Long studentId, StudentRequest request) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        Student student = getStudentById(studentId);
 
         student.setRollNumber(request.getRollNumber());
         student.setFirstName(request.getFirstName());
@@ -118,27 +133,33 @@ public class StudentServiceImpl implements StudentService {
         student.setSchoolClass(schoolClass);
         student.setSection(section);
 
+        student.setUpdatedAt(LocalDateTime.now());
+
+
         return mapToResponse(studentRepository.save(student));
-    }
-
-    @Override
-    public List<StudentResponse> getAllStudents() {
-        return studentRepository.findAll().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public StudentResponse getStudentProfile(Long userId) {
-        Student student = studentRepository.findByUserUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
-        return mapToResponse(student);
     }
 
     @Override
     public StudentResponse updateStudentProfile(Long userId, StudentRequest request) {
         Student student = studentRepository.findByUserUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new RuntimeException("Student not found with ID: " + userId));
+
+        student.setEmail(request.getEmail());
+        student.setMobileNumber(request.getMobileNumber());
+        student.setStreet(request.getStreet());
+        student.setCity(request.getCity());
+        student.setState(request.getState());
+        student.setCountry(request.getCountry());
+        student.setPinCode(request.getPinCode());
+        student.setUpdatedAt(LocalDateTime.now());
+
+        return mapToResponse(studentRepository.save(student));
+    }
+
+    @Override
+    public StudentResponse updateMyProfile(StudentProfileUpdateRequest request) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Student student = getCurrentStudent(username);
 
         student.setEmail(request.getEmail());
         student.setMobileNumber(request.getMobileNumber());
@@ -151,10 +172,37 @@ public class StudentServiceImpl implements StudentService {
         return mapToResponse(studentRepository.save(student));
     }
 
+    // ---------------------- GET ----------------------
+    @Override
+    public List<StudentResponse> getAllStudents() {
+        return studentRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public StudentResponse getStudentProfile(Long userId) {
+        Student student = studentRepository.findByUserUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Profile not found for userId: " + userId));
+        return mapToResponse(student);
+    }
+
+    @Override
+    public StudentResponse getMyProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return getMyProfile(username);
+    }
+
+    @Override
+    public StudentResponse getMyProfile(String username) {
+        Student student = getCurrentStudent(username);
+        return mapToResponse(student);
+    }
+
     @Override
     public DashboardResponse getDashboard(Long userId) {
         Student student = studentRepository.findByUserUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new RuntimeException("Student not found with userId: " + userId));
 
         return DashboardResponse.builder()
                 .profile(mapToResponse(student))
@@ -166,18 +214,24 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public String deleteStudent(Long studentId) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
-
-        User user = student.getUser();
-        studentRepository.delete(student);
-        if (user != null) {
-            userRepository.delete(user);
+    public List<StudentResponse> getStudentsByClass(Long classId, Long sectionId) {
+        if (sectionId != null) {
+            return studentRepository.findBySchoolClass_ClassIdAndSection_SectionId(classId, sectionId)
+                    .stream().map(this::mapToResponse).collect(Collectors.toList());
+        } else {
+            return studentRepository.findBySchoolClass_ClassId(classId)
+                    .stream().map(this::mapToResponse).collect(Collectors.toList());
         }
-
-        return "Student deleted successfully with id: " + studentId;
     }
+
+
+    @Override
+    public StudentResponse getStudentClassDetails(Long studentId) {
+        Student student = getStudentById(studentId);
+        return mapToResponse(student);
+    }
+
+    // ---------------------- ENROLL ----------------------
 
     private StudentResponse mapToResponse(Student student) {
         return StudentResponse.builder()
@@ -206,14 +260,13 @@ public class StudentServiceImpl implements StudentService {
     }
 
 
+
     @Override
     public StudentCreateResponse enrollStudent(Long studentId, EnrollmentRequest request) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + studentId));
+        Student student = getStudentById(studentId);
 
         SchoolClass schoolClass = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new EntityNotFoundException("Class not found with ID: " + request.getClassId()));
-
         Section section = sectionRepository.findById(request.getSectionId())
                 .orElseThrow(() -> new EntityNotFoundException("Section not found with ID: " + request.getSectionId()));
 
@@ -227,7 +280,21 @@ public class StudentServiceImpl implements StudentService {
         return StudentCreateResponse.fromEntity(student);
     }
 
+    // ---------------------- DELETE ----------------------
     @Override
+
+    public String deleteStudent(Long studentId) {
+        Student student = getStudentById(studentId);
+        User user = student.getUser();
+
+        studentRepository.delete(student);
+        if (user != null) userRepository.delete(user);
+
+        return "Student deleted successfully with ID: " + studentId;
+    }
+
+    // ---------------------- GET ENTITY ----------------------
+
     public List<StudentResponse> getStudentsByClass(Long classId, Long sectionId) {
         if (sectionId != null) {
             return studentRepository.findBySchoolClass_ClassIdAndSection_SectionId(classId, sectionId)
@@ -295,17 +362,37 @@ public class StudentServiceImpl implements StudentService {
                 .username(student.getUser() != null ? student.getUser().getUsername() : null)
                 .build();
     }
+
     @Override
     public Student getStudentByUsername(String username) {
         // Fetch User from User table
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
 
+
+
         // Fetch Student linked to this User
+
         return studentRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Student not found for user: " + username));
     }
     @Override
+
+    public Student getStudentById(Long studentId) {
+        return studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
+    }
+
+    @Override
+    public Optional<Student> findByUserUsername(String username) {
+        return studentRepository.findByUserUsername(username);
+    }
+
+    @Override
+    public Optional<Student> findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .flatMap(studentRepository::findByUser);
+
 
     public Student getStudentById(Long studentId) {
         return studentRepository.findById(studentId)
@@ -344,13 +431,42 @@ public class StudentServiceImpl implements StudentService {
         student.setUpdatedAt(LocalDateTime.now());
 
         return toResponse(studentRepository.save(student));
+
     }
     public Student getCurrentStudent(String username) {
         return studentRepository.findByUserUsername(username)
                 .orElseThrow(() -> new StudentNotFoundException(
-                        "No student profile linked with username: " + username
-                ));
+                        "No student profile linked with username: " + username));
     }
+
+
+    // ---------------------- PRIVATE ----------------------
+    private StudentResponse mapToResponse(Student student) {
+        return StudentResponse.builder()
+                .studentRegId(student.getStudentRegId())
+                .rollNumber(student.getRollNumber())
+                .firstName(Optional.ofNullable(student.getFirstName()).orElse(""))
+                .middleName(Optional.ofNullable(student.getMiddleName()).orElse(""))
+                .lastName(Optional.ofNullable(student.getLastName()).orElse(""))
+                .email(student.getEmail())
+                .mobileNumber(student.getMobileNumber())
+                .dateOfBirth(student.getDateOfBirth())
+                .gender(student.getGender())
+                .street(student.getStreet())
+                .city(student.getCity())
+                .state(student.getState())
+                .country(student.getCountry())
+                .pinCode(student.getPinCode())
+                .classId(student.getSchoolClass() != null ? student.getSchoolClass().getClassId() : null)
+                .className(student.getSchoolClass() != null ? student.getSchoolClass().getClassName() : null)
+                .sectionId(student.getSection() != null ? student.getSection().getSectionId() : null)
+                .sectionName(student.getSection() != null ? student.getSection().getSectionName() : null)
+                .enrolledAt(student.getEnrolledAt())
+                .createdAt(student.getCreatedAt())
+                .updatedAt(student.getUpdatedAt())
+                .username(student.getUser() != null ? student.getUser().getUsername() : null)
+                .build();
+
     @Override
     public Optional<Student> findByUserUsername(String username) {
         return studentRepository.findByUserUsername(username);
@@ -360,6 +476,7 @@ public class StudentServiceImpl implements StudentService {
     public Optional<Student> findByUsername(String username) {
         return userRepository.findByUsername(username)
                 .flatMap(studentRepository::findByUser);
+
     }
 
 
