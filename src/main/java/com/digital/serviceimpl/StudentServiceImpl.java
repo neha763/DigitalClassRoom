@@ -24,6 +24,8 @@ public class StudentServiceImpl implements StudentService {
     private final ClassRepository classRepository;
     private final SectionRepository sectionRepository;
     private final FeeStructureRepository feeRepository;
+    private final TeacherRepository teacherRepository; // add this
+
 
     @Override
     public StudentResponse createStudent(StudentRequest request) {
@@ -39,9 +41,15 @@ public class StudentServiceImpl implements StudentService {
         FeeStructure fee = feeRepository.findById(request.getFeeId())
                 .orElseThrow(() -> new RuntimeException("Fee not found with ID: " + request.getFeeId()));
 
+        Teacher teacher = teacherRepository.findById(request.getTeacherId())
+                .orElseThrow(() -> new RuntimeException("Teacher not found with ID: " + request.getTeacherId()));
+
+        // Instantiate student first
         Student student = Student.builder()
                 .user(user)
                 .rollNumber(request.getRollNumber())
+                .admissionNumber(request.getAdmissionNumber()) // required
+                .academicYear(request.getAcademicYear())       // required
                 .firstName(request.getFirstName())
                 .middleName(request.getMiddleName())
                 .lastName(request.getLastName())
@@ -57,11 +65,18 @@ public class StudentServiceImpl implements StudentService {
                 .schoolClass(schoolClass)
                 .section(section)
                 .feeStructure(fee)
+                .teacher(teacher) // assign teacher here
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
         return mapToResponse(studentRepository.save(student));
+    }
+
+
+    @Override
+    public StudentResponse createStudent(StudentRequest request, User user) {
+        return null;
     }
 
     @Override

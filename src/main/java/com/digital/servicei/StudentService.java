@@ -9,6 +9,9 @@ import java.util.Optional;
 
 public interface StudentService {
     StudentResponse createStudent(StudentRequest request);
+
+    StudentResponse createStudent(StudentRequest request, User user);
+
     StudentResponse updateStudent(Long studentId, StudentRequest request);
     List<StudentResponse> getAllStudents();
     StudentResponse getStudentProfile(Long userId);
