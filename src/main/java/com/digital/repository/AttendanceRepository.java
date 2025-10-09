@@ -38,4 +38,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Long countTotalDays(@Param("studentId") Long studentId,
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
+
+    List<Attendance> findByStudent_StudentRegId(Long studentRegId);
 }
