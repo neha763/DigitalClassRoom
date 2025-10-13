@@ -40,19 +40,15 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage())
+        );
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
 
-
-@ExceptionHandler(MethodArgumentNotValidException.class)
-public ResponseEntity<Map<String, String>> handleValidationExceptions(
-        MethodArgumentNotValidException ex) {
-
-    Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult().getFieldErrors().forEach(error ->
-            errors.put(error.getField(), error.getDefaultMessage())
-    );
-
-    return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-}
     @ExceptionHandler(ExamNotFoundException.class)
     public ResponseEntity<?> handleExamNotFound(ExamNotFoundException ex) {
         Map<String, Object> error = new HashMap<>();
@@ -62,6 +58,7 @@ public ResponseEntity<Map<String, String>> handleValidationExceptions(
         error.put("message", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler(DuplicateExamScheduleException.class)
     public ResponseEntity<?> handleDuplicateExam(DuplicateExamScheduleException ex) {
         return buildErrorResponse(HttpStatus.CONFLICT, "Duplicate Exam Schedule", ex.getMessage());
@@ -77,24 +74,24 @@ public ResponseEntity<Map<String, String>> handleValidationExceptions(
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Result Already Published", ex.getMessage());
     }
 
-    private ResponseEntity<?> buildErrorResponse(HttpStatus status, String error, String message) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", status.value());
-        body.put("error", error);
-        body.put("message", message);
-        return new ResponseEntity<>(body, status);
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<?> handleNotFound(NotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(buildBody(HttpStatus.NOT_FOUND, ex.getMessage()));
     }
 
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<?> handleBusiness(BusinessException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildBody(HttpStatus.BAD_REQUEST, ex.getMessage()));
+    }
 
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-//        Map<String, String> errors = new HashMap<>();
-//        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-//            errors.put(error.getField(), error.getDefaultMessage());
-//        }
-//        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-//    }
+    @ExceptionHandler(LibraryException.class)
+    public ResponseEntity<?> handleLibrary(LibraryException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(buildBody(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage()));
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CustomResponse> handleGenericException(Exception ex, HttpServletRequest request) {
@@ -104,6 +101,7 @@ public ResponseEntity<Map<String, String>> handleValidationExceptions(
                 request.getRequestURI()
         );
     }
+
 
     private ResponseEntity<CustomResponse> buildResponse(HttpStatus status, String message, String path) {
         CustomResponse response = new CustomResponse(
@@ -116,4 +114,21 @@ public ResponseEntity<Map<String, String>> handleValidationExceptions(
         return new ResponseEntity<>(response, status);
     }
 
+    private ResponseEntity<?> buildErrorResponse(HttpStatus status, String error, String message) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", status.value());
+        body.put("error", error);
+        body.put("message", message);
+        return new ResponseEntity<>(body, status);
+    }
+
+    private Map<String, Object> buildBody(HttpStatus status, String message) {
+        return Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", status.value(),
+                "error", status.getReasonPhrase(),
+                "message", message
+        );
+    }
 }

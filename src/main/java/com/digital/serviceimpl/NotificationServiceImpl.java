@@ -3,6 +3,7 @@ package com.digital.serviceimpl;
 import com.digital.dto.NotificationDto;
 import com.digital.entity.Notification;
 import com.digital.entity.Teacher;
+import com.digital.enums.EventType;
 import com.digital.repository.NotificationRepository;
 import com.digital.repository.TeacherRepository;
 import com.digital.servicei.NotificationService;
@@ -46,7 +47,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void sendNotification(Long teacherId, String message) {
+    public void sendNotification(Long teacherId, EventType reservationAvailable, String message) {
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
