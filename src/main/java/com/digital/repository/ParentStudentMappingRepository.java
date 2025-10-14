@@ -25,4 +25,5 @@ public interface ParentStudentMappingRepository extends JpaRepository<ParentStud
     List<Long> findStudentRegIdByParentId(Long parentId);
 
     List<ParentStudentMapping> findByStudent_StudentRegId(Long studentRegId);
+
 }
