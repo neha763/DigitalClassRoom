@@ -2,14 +2,14 @@ package com.digital.google_meet_config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/auth")
@@ -24,22 +24,21 @@ public class GoogleAuthController {
     @Value("${google.auth.url}")
     private String authUrl;
 
-    // Once we connect backend to frontend after that we will not need teacherId we will use SecurityContextHolder to
-    // get username then we will change the code
-    //@PreAuthorize("hasRole('TEACHER')")
     @GetMapping("/google/{id}")
     public void googleLogin(HttpServletResponse response, @PathVariable Long id) throws IOException {
 
-        // String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String encodedRedirectUri = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
+        String encodedScope = URLEncoder.encode("https://www.googleapis.com/auth/calendar.events", StandardCharsets.UTF_8);
 
         String url = authUrl
                 + "?client_id=" + clientId
-                + "&redirect_uri=" + redirectUri
+                + "&redirect_uri=" + encodedRedirectUri
                 + "&response_type=code"
-                + "&scope=https://www.googleapis.com/auth/calendar.events"
+                + "&scope=" + encodedScope
                 + "&access_type=offline"
                 + "&prompt=consent"
                 + "&state=" + id;
+
         response.sendRedirect(url);
     }
 }

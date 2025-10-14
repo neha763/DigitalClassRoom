@@ -6,12 +6,15 @@ import com.digital.entity.*;
 import com.digital.enums.NotificationType;
 import com.digital.enums.PTMStatus;
 import com.digital.events.PTMScheduledEvent;
+import com.digital.exception.ResourceNotFoundException;
 import com.digital.repository.*;
 import com.digital.servicei.GoogleMeetService;
 import com.digital.servicei.PTMService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -26,31 +29,43 @@ import java.util.stream.Collectors;
 public class PTMServiceImpl implements PTMService {
 
     private final PTMRepository ptmRepository;
-    private final StudentRepository studentRepository; // <- injected automatically
-    private final ParentStudentMappingRepository parentStudentMappingRepository;
-    private final ExamNotificationRepository examNotificationRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
     private final GoogleMeetService googleMeetService;
+    private final ApplicationEventPublisher eventPublisher;
 
-    @Transactional
+    @org.springframework.transaction.annotation.Transactional
     @Override
     public PTMResponse schedulePTM(PTMRequest request) {
-        // Fetch students
+
+        // 1️⃣ Fetch logged-in teacher
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        Teacher teacher = teacherRepository.findByUser_Username(username)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Teacher not found for username: " + username
+                ));
+        Long teacherId = teacher.getId();
+
+        // 2️⃣ Fetch students by IDs
         List<Student> students = studentRepository.findAllById(request.getStudentIds());
 
-        // Create Google Meet link
+        // 3️⃣ Create Google Meet link
         String meetLink = null;
         try {
             meetLink = googleMeetService.createGoogleMeetLink(
+                    teacherId,
                     request.getTitle(),
                     request.getMeetingDateTime(),
                     request.getDurationMinutes()
             );
         } catch (GeneralSecurityException | IOException e) {
             e.printStackTrace();
+            // Optional: throw new RuntimeException("Failed to create Google Meet link");
         }
 
-        // Create and save PTM
+        // 4️⃣ Create PTM entity
         PTM ptm = PTM.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
@@ -61,17 +76,17 @@ public class PTMServiceImpl implements PTMService {
                 .joinLink(meetLink)
                 .status(PTMStatus.SCHEDULED)
                 .students(students)
+                .teacher(teacher)
                 .build();
 
         ptm = ptmRepository.save(ptm);
 
-        // Publish event for notifications
+        // 5️⃣ Publish PTM scheduled event for notifications
         List<Long> studentIds = students.stream()
                 .map(Student::getStudentRegId)
-                .toList();
+                .collect(Collectors.toList());
         eventPublisher.publishEvent(new PTMScheduledEvent(ptm, studentIds));
-
-        // Build and return response
+        // 6️⃣ Build and return PTMResponse
         return PTMResponse.builder()
                 .ptmId(ptm.getPtmId())
                 .title(ptm.getTitle())
@@ -85,6 +100,7 @@ public class PTMServiceImpl implements PTMService {
                 .studentIds(studentIds)
                 .build();
     }
+
 
 
     @Override

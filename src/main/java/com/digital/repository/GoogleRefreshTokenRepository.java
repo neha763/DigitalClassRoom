@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface GoogleRefreshTokenRepository extends JpaRepository<GoogleRefreshToken, Long> {
     Optional<GoogleRefreshToken> findByTeacher_Id(Long teacherId);
+
+
 }

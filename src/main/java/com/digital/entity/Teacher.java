@@ -76,5 +76,7 @@ public class Teacher {
     @JoinColumn(name="classTeacherId")
     private ClassTeacher classTeacher;
 
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PTM> ptms;
 }
  
