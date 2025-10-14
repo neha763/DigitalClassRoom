@@ -107,6 +107,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceRepo.delete(invoice);
     }
 
+    // ✅ UPDATED METHOD
+    @Override
+    public List<InvoiceDTO> getAllInvoices() {
+        return invoiceRepo.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 
     public Invoice getOrCreateInvoice(Long studentId, Long feeId, String dueDateStr) {
         Student student = studentRepo.findById(studentId)

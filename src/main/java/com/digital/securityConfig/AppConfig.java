@@ -19,7 +19,9 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class AppConfig {
 
@@ -89,7 +91,9 @@ public class AppConfig {
                                 .requestMatchers("/api/admin/exams/report-cards/generate")
                                 .hasAnyRole("ADMIN", "TEACHER")
                                 .requestMatchers("/reports/**").permitAll()   // static reports folder
-                                .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "PARENT")  // secure API
+                        .requestMatchers("/api/studentFee/invoices/all").hasRole("ADMIN")
+
+                        .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "PARENT")  // secure API
                                 .requestMatchers("/api/teacher/**").hasAnyRole("ADMIN", "TEACHER")
 
 
@@ -169,6 +173,19 @@ public class AppConfig {
         return (request, response, authException) -> {
             throw new CustomUnauthorizedException("Unauthorized - Please log in");
         };
+    }
+    // ===== CORS Filter =====
+    @Bean
+    public
+    CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:4200"); // Angular frontend
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 
     @Bean

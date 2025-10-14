@@ -22,16 +22,8 @@ public interface StudentService {
     List<StudentResponse> getStudentsByClass(Long classId, Long sectionId);
     StudentResponse getStudentClassDetails(Long studentId);
 
-
     // Update Student Profile
     StudentResponse updateStudentProfile(Long userId, StudentRequest request);
-
-    Student getStudentByUsername(String username);
-
-    Student getStudentById(Long studentId);
-
-
-
     StudentResponse updateMyProfile(StudentProfileUpdateRequest request);
 
     // Current logged-in Student
@@ -54,5 +46,4 @@ public interface StudentService {
     // Optional fetch methods
     Optional<Student> findByUserUsername(String username);
     Optional<Student> findByUsername(String username);
-
 }
