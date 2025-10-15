@@ -19,6 +19,8 @@ import java.util.Map;
 public class GoogleOAuth2CallbackController {
 
     private final WebClient webClient;
+    private final GoogleRefreshTokenService googleRefreshTokenService;
+    private final TeacherRepository teacherRepository;
 
     @Value("${google.client.id}")
     private String clientId;
@@ -32,18 +34,17 @@ public class GoogleOAuth2CallbackController {
     @Value("${google.token.url}")
     private String tokenUrl;
 
-    private final GoogleRefreshTokenService googleRefreshTokenService;
-    private final TeacherRepository teacherRepository;
-
-    public GoogleOAuth2CallbackController(WebClient.Builder builder, GoogleRefreshTokenService googleRefreshTokenService, TeacherRepository teacherRepository) {
+    public GoogleOAuth2CallbackController(WebClient.Builder builder,
+                                          GoogleRefreshTokenService googleRefreshTokenService,
+                                          TeacherRepository teacherRepository) {
         this.webClient = builder.build();
         this.googleRefreshTokenService = googleRefreshTokenService;
         this.teacherRepository = teacherRepository;
     }
 
     @GetMapping("/callback")
-    public void callback(@RequestParam("code") String code, @RequestParam("state") Long teacherId) {
-        System.out.println("in callback");
+    public String callback(@RequestParam("code") String code, @RequestParam("state") Long teacherId) {
+
         String body = "code=" + code
                 + "&client_id=" + clientId
                 + "&client_secret=" + clientSecret
@@ -58,18 +59,19 @@ public class GoogleOAuth2CallbackController {
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                 .block();
 
+        if (response == null || !response.containsKey("refresh_token")) {
+            throw new RuntimeException("Failed to retrieve refresh token from Google");
+        }
+
         String refreshToken = (String) response.get("refresh_token");
 
-        Teacher teacher = teacherRepository.findById(teacherId).orElseThrow(() ->
-                new ResourceNotFoundException("Teacher with id: " + teacherId + " not found in database."));
+        Teacher teacher = teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher with id: " + teacherId + " not found"));
 
-        GoogleRefreshToken googleRefreshToken = GoogleRefreshToken.builder()
-                .refreshToken(refreshToken)
-                .teacher(teacher)
-                .build();
+        googleRefreshTokenService.saveRefreshToken(
+                new com.digital.google_meet_config.GoogleRefreshToken(null, teacher, refreshToken)
+        );
 
-        googleRefreshTokenService.saveRefreshToken(googleRefreshToken);
-        System.out.println("in callback after token saved");
+        return "Google account connected successfully!";
     }
 }
-

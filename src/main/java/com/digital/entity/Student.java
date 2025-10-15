@@ -123,4 +123,8 @@ public class Student {
     public String getName() {
         return firstName + " " + lastName;
     }
+
+    @ManyToMany(mappedBy = "students")
+    private List<PTM> ptms;
+
 }

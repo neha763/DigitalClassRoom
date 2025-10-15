@@ -13,21 +13,20 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/students/admin")
 @RequiredArgsConstructor
 public class AdminStudentController {
 
     private final StudentService studentService;
-
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<StudentResponse> createStudent(@RequestBody StudentRequest request) {
-        User user = new User();
-        user.setUserId(1L);
-        return ResponseEntity.ok(studentService.createStudent(request));
+        StudentResponse response = studentService.createStudent(request);
+        return ResponseEntity.ok(response);
     }
+
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")

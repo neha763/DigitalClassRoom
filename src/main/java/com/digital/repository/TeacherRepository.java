@@ -21,4 +21,5 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     List<Teacher> findByAssignedClass_ClassIdAndAssignedSection_SectionId(Long classId, Long sectionId);
     List<Teacher> findAllByAssignedClass_ClassId(Long classId);
 
+
 }

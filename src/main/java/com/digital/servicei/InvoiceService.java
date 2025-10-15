@@ -14,4 +14,6 @@ public interface InvoiceService {
 
     void deleteInvoice(Long id);
 
+    List<InvoiceDTO> getAllInvoices();
+
 }
