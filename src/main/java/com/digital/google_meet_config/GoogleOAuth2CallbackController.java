@@ -6,14 +6,12 @@ import com.digital.repository.TeacherRepository;
 import com.digital.servicei.GoogleRefreshTokenService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Map;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/oauth2")
 public class GoogleOAuth2CallbackController {
@@ -74,4 +72,35 @@ public class GoogleOAuth2CallbackController {
 
         return "Google account connected successfully!";
     }
+
+//    @GetMapping("/callback")
+//    public void callback(@RequestParam("code") String code, @RequestParam("state") String username) {
+//        System.out.println("in callback");
+//        String body = "code=" + code
+//                + "&client_id=" + clientId
+//                + "&client_secret=" + clientSecret
+//                + "&redirect_uri=" + redirectUri
+//                + "&grant_type=authorization_code";
+//
+//        Map<String, Object> response = webClient.post()
+//                .uri(tokenUrl)
+//                .header("Content-Type", "application/x-www-form-urlencoded")
+//                .bodyValue(body)
+//                .retrieve()
+//                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+//                .block();
+//
+//        String refreshToken = (String) response.get("refresh_token");
+//
+//        Teacher teacher = teacherRepository.findByUser_Username(username).orElseThrow(() ->
+//                new ResourceNotFoundException("Teacher with username: " + username + " not found in database."));
+//
+//        GoogleRefreshToken googleRefreshToken = GoogleRefreshToken.builder()
+//                .refreshToken(refreshToken)
+//                .teacher(teacher)
+//                .build();
+//
+//        googleRefreshTokenService.saveRefreshToken(googleRefreshToken);
+//        System.out.println("in callback after token saved");
+//    }
 }

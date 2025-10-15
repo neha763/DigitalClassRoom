@@ -2,7 +2,6 @@ package com.digital.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "class_teacher")
@@ -11,13 +10,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonIgnoreProperties("schoolclass")
+@JsonIgnoreProperties({"schoolClass", "section"})
 public class ClassTeacher {
 
-       @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long classTeacherId;
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long classTeacherId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "classId")
@@ -26,9 +24,6 @@ public class ClassTeacher {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sectionId")
     private Section section;
-        private LocalDateTime assignedAt;
-
-
-    }
+}
 
 

@@ -1,5 +1,5 @@
 package com.digital.enums;
 
 public enum Role {
-    ADMIN, TEACHER, STUDENT, LIBRARIAN, TRANSPORT,  PARENT
+    ADMIN, PARENT, TEACHER, STUDENT, LIBRARIAN, TRANSPORT
 }

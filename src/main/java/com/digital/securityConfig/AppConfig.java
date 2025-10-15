@@ -22,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+
 @Configuration
 public class AppConfig {
 
@@ -53,15 +54,29 @@ public class AppConfig {
         return config.getAuthenticationManager();
     }
 
+    // ===== CORS Filter =====
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:4200"); // Angular frontend
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         logger.info("Building Security Filter Chain...");
 
         http.csrf(AbstractHttpConfigurer::disable)
+                .cors().and()
                 .authorizeHttpRequests(auth -> auth
 
                         // auth/login
-                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
 
                         // user APIs
                         .requestMatchers("/api/user/otp", "/api/user/password").permitAll()
@@ -71,41 +86,34 @@ public class AppConfig {
                         .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
                         .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
 
-
                         // attendance rule apis
                         .requestMatchers( "/api/attendanceRules/**").hasRole("ADMIN")
+
+                        // student attendance
+                        .requestMatchers("/api/attendance/join-session/*",
+                                                  "/api/attendance/leave-session/*").hasRole("STUDENT")
+
+                        // teacher attendance
+                        .requestMatchers("/api/attendance/auto-mark/*",
+                                "/api/attendance/check-in-list/*",
+                                "/api/attendance/view/*",
+                                "/api/attendance/view-all/*",
+                                "/api/attendance/update/*").hasRole("TEACHER")
+
+                        // admin attendance
+                        .requestMatchers("/api/attendance/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
 
                         // class session apis
                         .requestMatchers("/api/session").hasRole("TEACHER")
                         .requestMatchers("/api/session/get").hasAnyRole("TEACHER', 'STUDENT', 'ADMIN")
 
-                         // attendance apis for STUDENT AND TEACHER
-                        .requestMatchers("/api/attendance/join-session/*", "/api/attendance/leave-session/*")
-                           .hasRole("STUDENT")
-
-                        .requestMatchers("/api/attendance/auto-mark/*", "/api/attendance/check-in-list/*",
-                                "/api/attendance/view/*", "/api/attendance/view-all/*", "/api/attendance/update/*")
-                           .hasRole("TEACHER")
-
                         //report
                                 .requestMatchers("/api/admin/exams/report-cards/generate")
                                 .hasAnyRole("ADMIN", "TEACHER")
                                 .requestMatchers("/reports/**").permitAll()   // static reports folder
-                        .requestMatchers("/api/studentFee/invoices/all").hasRole("ADMIN")
-
-                        .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "PARENT")  // secure API
+                                .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "PARENT")  // secure API
                                 .requestMatchers("/api/teacher/**").hasAnyRole("ADMIN", "TEACHER")
-
-
-                                // attendance apis for ADMIN
-                        .requestMatchers("/api/attendance/admin/update/*", "/api/attendance/admin/view/*",
-                                "/api/attendance/admin/view-all/*", "/api/attendance/admin/delete/*").hasRole("ADMIN")
-
-                        .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
-
-                        // attendance rules
-                        .requestMatchers("/api/attendanceRules/**").hasRole("ADMIN")
-
 
                         // subject apis
                         .requestMatchers("/api/admin/subject", "/api/admin/subject/*",
@@ -116,45 +124,79 @@ public class AppConfig {
                         .requestMatchers("/api/admin/timetable/**").hasRole("ADMIN")
 
                         // teacher timetable and session apis
-                        .requestMatchers("/teacher/timetable/*", "/teacher/sessions/*").hasRole("TEACHER")
+                        .requestMatchers("/teacher/timetable/*",
+                                                  "/teacher/sessions/*").hasRole("TEACHER")
 
                         // student timetable and session apis
-                        .requestMatchers("/student/timetable/*", "/student/sessions/*").hasRole("STUDENT")
+                        .requestMatchers("/student/timetable/*",
+                                                  "/student/sessions/*").hasRole("STUDENT")
 
                         // class session apis
                         .requestMatchers("/api/session/joinLink").hasRole("TEACHER")
                         .requestMatchers("/api/session/get").hasAnyRole("TEACHER", "STUDENT", "ADMIN")
 
                         // Google Meet apis
-                        .requestMatchers("/auth/google/**").permitAll()
+                        .requestMatchers("/auth/google/*").permitAll()
                         .requestMatchers("/oauth2/callback/**").permitAll()
-
-                        // student attendance
-                        .requestMatchers("/api/attendance/join-session/*", "/api/attendance/leave-session/*").hasRole("STUDENT")
-
-                        // teacher attendance
-                        .requestMatchers("/api/attendance/auto-mark/*", "/api/attendance/check-in-list/*",
-                                "/api/attendance/view/*", "/api/attendance/view-all/*", "/api/attendance/update/*")
-                        .hasRole("TEACHER")
-
-                        // admin attendance
-                        .requestMatchers("/api/attendance/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
 
                         // teacher APIs
                         .requestMatchers("/api/teacher/**").hasRole("ADMIN")
-                          //parent
-                                .requestMatchers("/parent/**").hasRole("PARENT")
+
                         // class/section
                         .requestMatchers("/api/class/**", "/api/section/**").hasRole("ADMIN")
-                        //assignment
-                        .requestMatchers("/teacher/assignments/**").hasRole("TEACHER")
+
                         // students
                         .requestMatchers("/api/students/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/students/**").hasRole("STUDENT")
+
+                        // fee and payment apis
+
                         .requestMatchers("/api/admin/**", "/api/gateway**").hasRole("ADMIN")
                         .requestMatchers("/api/payment/**").hasRole("STUDENT")
                         .requestMatchers("/api/studentFee/**").hasRole("STUDENT")
+
+                        // ADMIN Academic Calendar Apis
+                        .requestMatchers("/admin/calendar",
+                                                  "/admin/calendar/*/holidays",
+                                                  "/admin/calendar/*/events",
+                                                  "/admin/calendar/view-all",
+                                                  "/admin/calendar/view/*",
+                                                  "/admin/calendar/*",
+                                                  "/admin/calendar/holidays/*/view",
+                                                  "/admin/calendar/holidays/view-all",
+                                                  "/admin/calendar/holidays/*",
+                                                  "/admin/calendar/holidays/remove/*",
+                                                  "/admin/calendar/events/*",
+                                                  "/admin/calendar/events/*/view",
+                                                  "admin/calendar/events/view-all",
+                                                  "/admin/calendar/events/remove/*").hasRole("ADMIN")
+
+                        // TEACHER view calendar events Api
+                        .requestMatchers("/teacher/calendar").hasRole("TEACHER")
+
+                        // STUDENT view calender events Api
+                        .requestMatchers("/student/calendar").hasRole("STUDENT")
+
+                        // Holiday Event Notifications
+                        .requestMatchers("/holiday-event-notification",
+                                                  "/holiday-event-notification/seen/*").permitAll()
+
+                        // Student Leave request apis
+                        .requestMatchers("/student/leaves/apply",
+                                                  "/student/leaves/status").hasRole("STUDENT")
+
+                        // Teacher Leave request apis
+                        .requestMatchers("/teacher/leaves/apply").hasRole("TEACHER")
+                        .requestMatchers("/teacher/student-leave/view",
+                                                  "/teacher/student-leave/*/approve",
+                                                  "/teacher/student-leave/*/reject").hasAnyRole("TEACHER", "ADMIN")
+
+                        // Admin Leave request apis
+                        .requestMatchers("/admin/leave-requests",
+                                                  "/admin/leave-requests/*/approve",
+                                                  "/admin/leave-requests/*/reject").hasRole("ADMIN")
+
+                        // any other API requires auth
                         .requestMatchers("/api/**").authenticated()
                 )
                 .exceptionHandling(ex -> ex
@@ -173,19 +215,6 @@ public class AppConfig {
         return (request, response, authException) -> {
             throw new CustomUnauthorizedException("Unauthorized - Please log in");
         };
-    }
-    // ===== CORS Filter =====
-    @Bean
-    public
-    CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:4200"); // Angular frontend
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
     }
 
     @Bean

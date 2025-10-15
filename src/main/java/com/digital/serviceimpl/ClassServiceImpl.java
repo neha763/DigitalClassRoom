@@ -60,4 +60,5 @@ public class ClassServiceImpl implements ClassService {
     public List<SchoolClass> getAllClasses() {
         return classRepository.findAll();
     }
+
 }
