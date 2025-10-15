@@ -32,7 +32,7 @@ private String firstName;
     private List<Long> assignedSectionIds;
     private List<Long> studentIds;
     private Long classTeacherId;
-    private boolean isClassTeacher;
+    private boolean assignedAsClassTeacher;
 
     private Long classId;
     private Long sectionId;

@@ -113,6 +113,7 @@ public class TimetableServiceImpl implements TimetableService {
         existingTimetable.setSubject(subject);
         existingTimetable.setStartTime(request.getStartTime());
         existingTimetable.setEndTime(request.getEndTime());
+        existingTimetable.setDate(request.getDate());
 
         timetableRepository.save(existingTimetable);
 
@@ -132,7 +133,28 @@ public class TimetableServiceImpl implements TimetableService {
 
     @Override
     public List<Timetable> getTimetables() {
+
         return timetableRepository.findAll();
+
+//        List<TimetableResponse> list = new ArrayList<>();
+//
+//        timetables.forEach(t -> {
+//            TimetableResponse build = TimetableResponse.builder()
+//                    .schoolClassId(t.getSchoolClass().getClassId())
+//                    .subjectId(t.getSubject().getSubjectId())
+//                    .sectionId(t.getSection().getSectionId())
+//                    .teacherId(t.getTeacher().getId())
+//                    .createdAt(t.getCreatedAt())
+//                    .updatedAt(t.getUpdatedAt())
+//                    .startTime(t.getStartTime())
+//                    .endTime(t.getEndTime())
+//                    .date(t.getDate())
+//                    .dayOfWeek(t.getDayOfWeek())
+//                    .build();
+//
+//            list.add(build);
+//        });
+//        return list;
     }
 
     @Override

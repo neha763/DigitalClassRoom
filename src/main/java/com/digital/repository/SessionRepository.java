@@ -4,6 +4,7 @@ import com.digital.entity.Session;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -17,4 +18,5 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
 
     Session findByTimetable_TimetableId(Long timetableId);
 
+    List<Session> findAllByDate(LocalDate timetableRescheduleDate);
 }

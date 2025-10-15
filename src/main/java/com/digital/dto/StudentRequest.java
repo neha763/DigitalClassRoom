@@ -64,4 +64,5 @@ public class StudentRequest {
 
     @NotNull(message = "Fee ID is required")
     private Long feeId;
+
 }

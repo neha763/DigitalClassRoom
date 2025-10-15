@@ -1,6 +1,7 @@
 package com.digital.servicei;
 
 import com.digital.entity.SchoolClass;
+import org.springframework.http.HttpStatusCode;
 
 import java.util.List;
 

@@ -23,7 +23,7 @@ public class Attendance {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long attendanceId;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "studentId", nullable = false)
     private Student student;
 
@@ -31,8 +31,8 @@ public class Attendance {
     @JoinColumn(name = "classId", nullable = false)
     private SchoolClass schoolClass;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "sessionId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sessionId")
     private Session session;
 
     @Column(nullable = false)

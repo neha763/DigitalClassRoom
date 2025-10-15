@@ -4,6 +4,7 @@ import com.digital.entity.Timetable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,4 +17,6 @@ public interface TimetableRepository extends JpaRepository<Timetable, Long> {
     boolean existsBySection_SectionIdAndStartTime(Long sectionId, LocalDateTime startTime);
 
     boolean existsByStartTimeAndTeacher_Id(LocalDateTime startTime, Long id);
+
+    List<Timetable> findAllByDate(LocalDate holidayDate);
 }

@@ -1,5 +1,7 @@
 package com.digital.serviceimpl;
 
+import com.digital.dto.SectionRequest;
+import com.digital.dto.SectionResponse;
 import com.digital.entity.SchoolClass;
 import com.digital.entity.Section;
 import com.digital.repository.ClassRepository;
@@ -74,4 +76,5 @@ public class SectionServiceImpl implements SectionService {
     public List<Section> getAllSections() {
         return sectionRepository.findAll();
     }
+
 }

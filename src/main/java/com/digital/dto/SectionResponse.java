@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class SectionResponse {
     private Long sectionId;
     private String sectionName;
+    private Integer capacity;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

@@ -34,10 +34,13 @@ public class TimetableController {
         return new ResponseEntity<>(timetableService.updateTimetable(timetableId, request), HttpStatus.OK);
     }
 
+
+    // Here we are returning List<Timetable> but because of frontend we have changed the return type to List<TimetableResponse>
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(produces = "application/json")
     public ResponseEntity<List<Timetable>> getTimetables(){
-        return new ResponseEntity<>(timetableService.getTimetables(), HttpStatus.OK);
+        return new ResponseEntity<List<Timetable>>(timetableService.getTimetables(), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

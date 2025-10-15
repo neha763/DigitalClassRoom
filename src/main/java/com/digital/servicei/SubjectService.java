@@ -1,14 +1,7 @@
-
-
 package com.digital.servicei;
+
 import com.digital.dto.SubjectRequest;
 import com.digital.dto.SubjectResponse;
-
-//package com.digital.servicei;
-
-import com.digital.dto.SubjectRequest;
-import com.digital.entity.Subject;
-
 
 import java.util.List;
 
