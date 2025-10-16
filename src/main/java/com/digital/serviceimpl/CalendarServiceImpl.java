@@ -7,6 +7,7 @@ import com.digital.enums.EventType;
 import com.digital.events.EmergencyHolidayEvent;
 import com.digital.events.RescheduledEvent;
 import com.digital.events.RescheduledHolidayEvent;
+import com.digital.exception.DuplicateResourceException;
 import com.digital.exception.InvalidDateException;
 import com.digital.exception.ResourceNotFoundException;
 import com.digital.repository.*;
@@ -48,6 +49,10 @@ public class CalendarServiceImpl implements CalendarService {
 
     @Override
     public CalendarDto createAcademicCalender(CreateAcademicCalenderRequest request, String username) {
+
+        if(academicCalendarRepository.existsByAcademicYear(request.getAcademicYear())){
+            throw new DuplicateResourceException("Academic calendar with academic year " + request.getAcademicYear() + " is already present.");
+        }
 
         Admin admin = adminRepository.findByUsername(username).orElseThrow(() ->
                 new ResourceNotFoundException("Admin record not found in database"));

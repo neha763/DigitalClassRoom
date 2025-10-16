@@ -104,10 +104,6 @@ public class AppConfig {
                         .requestMatchers("/api/attendance/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
 
-                        // class session apis
-                        .requestMatchers("/api/session").hasRole("TEACHER")
-                        .requestMatchers("/api/session/get").hasAnyRole("TEACHER', 'STUDENT', 'ADMIN")
-
                         //report
                                 .requestMatchers("/api/admin/exams/report-cards/generate")
                                 .hasAnyRole("ADMIN", "TEACHER")
@@ -123,21 +119,24 @@ public class AppConfig {
                         // admin timetable apis
                         .requestMatchers("/api/admin/timetable/**").hasRole("ADMIN")
 
-                        // teacher timetable and session apis
+                        // teacher timetable and session apis - TeacherTimetableController
                         .requestMatchers("/teacher/timetable/*",
                                                   "/teacher/sessions/*").hasRole("TEACHER")
 
-                        // student timetable and session apis
+                        // student timetable and session apis - StudentTimetableController
                         .requestMatchers("/student/timetable/*",
                                                   "/student/sessions/*").hasRole("STUDENT")
 
-                        // class session apis
+                        // class session apis - SessionController
                         .requestMatchers("/api/session/joinLink").hasRole("TEACHER")
                         .requestMatchers("/api/session/get").hasAnyRole("TEACHER", "STUDENT", "ADMIN")
 
                         // Google Meet apis
                         .requestMatchers("/auth/google/*").permitAll()
                         .requestMatchers("/oauth2/callback/**").permitAll()
+
+                        // teacher assignments - TeacherAssignmentController
+                        .requestMatchers("/teacher/assignments/**").hasRole("TEACHER")
 
                         // teacher APIs
                         .requestMatchers("/api/teacher/**").hasRole("ADMIN")
@@ -149,9 +148,10 @@ public class AppConfig {
                         .requestMatchers("/api/students/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/students/**").hasRole("STUDENT")
 
-                        // fee and payment apis
+                        // exams, fee and payment apis
 
-                        .requestMatchers("/api/admin/**", "/api/gateway**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**",
+                                                  "/api/gateway**").hasRole("ADMIN")
                         .requestMatchers("/api/payment/**").hasRole("STUDENT")
                         .requestMatchers("/api/studentFee/**").hasRole("STUDENT")
 
