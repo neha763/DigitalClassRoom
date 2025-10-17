@@ -70,7 +70,7 @@ public class GoogleOAuth2CallbackController {
                 new com.digital.google_meet_config.GoogleRefreshToken(null, teacher, refreshToken)
         );
 
-        return "Google account connected successfully!";
+        return "Google account connected successfully! Now add join link to session.";
     }
 
 //    @GetMapping("/callback")

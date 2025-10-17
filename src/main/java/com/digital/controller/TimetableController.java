@@ -24,7 +24,6 @@ public class TimetableController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = "application/json", produces = "text/plain")
     public ResponseEntity<String> createTimetable(@Valid @RequestBody TimetableRequest timetableRequest){
-        System.out.println("In timetable controller");
         return new ResponseEntity<>(timetableService.createTimetable(timetableRequest), HttpStatus.CREATED);
     }
 
@@ -46,6 +45,6 @@ public class TimetableController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{timetableId}")
     public ResponseEntity<String> deleteTimetable(@PathVariable Long timetableId){
-        return new ResponseEntity<>(timetableService.deleteTimetable(timetableId), HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(timetableService.deleteTimetable(timetableId), HttpStatus.OK);
     }
 }

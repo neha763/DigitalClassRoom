@@ -200,11 +200,9 @@ public class PaymentServiceImpl implements PaymentService {
             inv.recomputeStatus();
 
             invoiceRepo.save(inv);
-
         }
 
         paymentRepo.delete(payment);
-
     }
 
     private PaymentDTO toDTO(Payment payment) {

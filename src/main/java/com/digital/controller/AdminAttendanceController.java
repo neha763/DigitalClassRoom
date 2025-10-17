@@ -61,7 +61,7 @@ public class AdminAttendanceController {
     @DeleteMapping(path = "/delete/{attendanceId}")
     public ResponseEntity<String> deleteAttendanceRecord(@PathVariable Long attendanceId){
        String message = adminAttendanceService.deleteAttendanceRecord(attendanceId);
-        return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
     /**

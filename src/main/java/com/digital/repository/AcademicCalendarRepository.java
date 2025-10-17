@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface AcademicCalendarRepository extends JpaRepository<AcademicCalendar, Long> {
 
 
+    boolean existsByAcademicYear(String academicYear);
 }

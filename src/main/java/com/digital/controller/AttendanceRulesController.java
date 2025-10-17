@@ -66,6 +66,6 @@ public class AttendanceRulesController {
 
     @DeleteMapping(value = "/{attendanceRuleId}")
     public ResponseEntity<String> deleteRule(@PathVariable Long attendanceRuleId){
-        return new ResponseEntity<>(attendanceRulesService.deleteRule(attendanceRuleId), HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(attendanceRulesService.deleteRule(attendanceRuleId), HttpStatus.OK);
     }
 }
