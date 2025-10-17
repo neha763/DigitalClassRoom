@@ -5,6 +5,7 @@ import com.digital.dto.SectionResponse;
 import com.digital.entity.Section;
 import com.digital.servicei.SectionService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -47,13 +48,13 @@ public class AdminSectionController {
         SectionResponse response = SectionResponse.builder()
                 .sectionId(saved.getSectionId())
                 .sectionName(saved.getSectionName())
+                .capacity(saved.getCapacity())
                 .createdAt(saved.getCreatedAt())
                 .updatedAt(saved.getUpdatedAt())
                 .build();
 
         return ResponseEntity.ok(response);
     }
-
 
     @PutMapping("/sections/{id}")
     public ResponseEntity<Section> updateSection(@PathVariable Long id,
@@ -73,14 +74,13 @@ public class AdminSectionController {
     }
 
     @GetMapping("/classes/{classId}/sections")
-
     public ResponseEntity<List<SectionResponse>> getSectionsByClass(@PathVariable Long classId) {
         List<SectionResponse> response = sectionService.getAllSections().stream()
                 .filter(s -> s.getSchoolClass().getClassId().equals(classId))
                 .map(s -> SectionResponse.builder()
                         .sectionId(s.getSectionId())
                         .sectionName(s.getSectionName())
-                        //.capacity(s.getCapacity())
+                        .capacity(s.getCapacity())
 //                        .classId(s.getSchoolClass().getClassId())
 //                        .className(s.getSchoolClass().getClassName())
                      .createdAt(s.getCreatedAt())

@@ -17,6 +17,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,20 +49,22 @@ class TimetableControllerTest {
         when(timetableService.createTimetable(any(TimetableRequest.class)))
                 .thenReturn("Timetable created successfully");
 
-        String requestBody = """
+        LocalDate futureDate = LocalDate.now().plusDays(1);
+
+        String requestBody = String.format("""
                 {
                     "schoolClass": {"classId": 1},
                     "section": {"sectionId": 2},
                     "subject": {"subjectId": 3},
                     "teacher": {"id": 2},
                     "dayOfWeek": "FRIDAY",
-                    "startTime": "2025-09-25T11:00:00",
-                    "endTime": "2025-09-25T12:00:00",
-                    "date": "2025-09-25",
+                    "startTime": "%sT11:00:00",
+                    "endTime": "%sT12:00:00",
+                    "date": "%s",
                     "topic": "Integration",
                     "description": "Introduction to integration and its importance in mathematics"
                 }
-                """;
+                """, futureDate, futureDate, futureDate);
 
         mockMvc.perform(post("/api/admin/timetable")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -76,16 +79,19 @@ class TimetableControllerTest {
         when(timetableService.updateTimetable(eq(1L), any(UpdateTimetableRequest.class)))
                 .thenReturn("Timetable updated successfully");
 
-        String requestBody = """
+        LocalDate futureDate = LocalDate.now().plusDays(1);
+
+        String requestBody = String.format("""
                 {
                     "teacher": {"id": 1},
                     "subject": {"subjectId": 2},
                     "topic": "Differentiation",
                     "description": "Intro to Differentiation and its importance",
-                    "startTime": "2025-09-25T13:00:00",
-                    "endTime": "2025-09-25T14:00:00"
+                    "startTime": "%sT13:00:00",
+                    "endTime": "%sT14:00:00",
+                    "date": "%s"
                 }
-                """;
+                """, futureDate, futureDate, futureDate);
 
         mockMvc.perform(put("/api/admin/timetable/1")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -73,10 +73,9 @@ public class TeacherDto {
     private List<String> classNames;
     private List<Long> sectionIds;
     private List<String> sectionNames;
-    private boolean isClassTeacher;
+    private boolean assignedAsClassTeacher;;
 
-    @JsonIgnore
-    private ClassTeacher classTeacher; // ✅ Add this line
+    private Long classTeacherId;
 
 
     // Constructor to map Teacher entity to DTO

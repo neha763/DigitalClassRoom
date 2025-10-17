@@ -5,6 +5,7 @@ import com.digital.entity.Attendance;
 import com.digital.entity.SchoolClass;
 import com.digital.entity.Section;
 import com.digital.entity.Student;
+import com.digital.enums.AttendanceStatus;
 import com.digital.enums.MarkBy;
 import com.digital.exception.ResourceNotFoundException;
 import com.digital.repository.*;
@@ -167,22 +168,38 @@ public class AdminAttendanceServiceImpl implements AdminAttendanceService {
         table.addHeaderCell("Mark By");
 
         studentAttendanceRecords.forEach(attendance -> {
-
-            table.addCell(student.getRollNumber());
-            table.addCell(student.getFirstName() + " " + student.getMiddleName()
-                    + " " + student.getLastName());
-            table.addCell(schoolClass.getClassName());
-            table.addCell(section.getSectionName());
-            table.addCell(String.valueOf(attendance.getDate()));
-            table.addCell(String.valueOf(attendance.getSession().getSessionId()));
-            table.addCell(String.valueOf(attendance.getJoinTime()));
-            table.addCell(String.valueOf(attendance.getExitTime()));
-            table.addCell(String.valueOf(attendance.getDurationMinutes()));
-            table.addCell(String.valueOf(attendance.getSession().getTeacher().getId()));
-            table.addCell(attendance.getSession().getTeacher().getFirstName() + " " +
-                    attendance.getSession().getTeacher().getLastName());
-            table.addCell(attendance.getStatus().name());
-            table.addCell(attendance.getMarkedBy().name());
+            if(attendance.getStatus().equals(AttendanceStatus.LEAVE)) {
+                table.addCell(student.getRollNumber());
+                table.addCell(student.getFirstName() + " " + student.getMiddleName()
+                        + " " + student.getLastName());
+                table.addCell(schoolClass.getClassName());
+                table.addCell(section.getSectionName());
+                table.addCell(String.valueOf(attendance.getDate()));
+                table.addCell("");
+                table.addCell("");
+                table.addCell("");
+                table.addCell("");
+                table.addCell("");
+                table.addCell("");
+                table.addCell(attendance.getStatus().name());
+                table.addCell(attendance.getMarkedBy().name());
+            }else {
+                table.addCell(student.getRollNumber());
+                table.addCell(student.getFirstName() + " " + student.getMiddleName()
+                        + " " + student.getLastName());
+                table.addCell(schoolClass.getClassName());
+                table.addCell(section.getSectionName());
+                table.addCell(String.valueOf(attendance.getDate()));
+                table.addCell(String.valueOf(attendance.getSession().getSessionId()));
+                table.addCell(String.valueOf(attendance.getJoinTime()));
+                table.addCell(String.valueOf(attendance.getExitTime()));
+                table.addCell(String.valueOf(attendance.getDurationMinutes()));
+                table.addCell(String.valueOf(attendance.getSession().getTeacher().getId()));
+                table.addCell(attendance.getSession().getTeacher().getFirstName() + " " +
+                        attendance.getSession().getTeacher().getLastName());
+                table.addCell(attendance.getStatus().name());
+                table.addCell(attendance.getMarkedBy().name());
+            }
         });
 
         document.add(table).setFontSize(10);

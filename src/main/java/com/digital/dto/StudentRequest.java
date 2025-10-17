@@ -2,7 +2,6 @@ package com.digital.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
-
 import java.time.LocalDate;
 
 @Getter
@@ -19,6 +18,12 @@ public class StudentRequest {
     @Pattern(regexp = "^[A-Z0-9]{5,15}$", message = "Roll number must be alphanumeric (5–15 chars)")
     private String rollNumber;
 
+    @NotBlank(message = "Admission number is required")
+    private String admissionNumber;
+
+    @NotBlank(message = "Academic year is required")
+    private String academicYear;
+
     @NotBlank(message = "First name is required")
     private String firstName;
 
@@ -28,7 +33,7 @@ public class StudentRequest {
     private String lastName;
 
     @NotBlank(message = "Email is required")
-    @Email
+    @Email(message = "Email must be valid")
     private String email;
 
     @Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must be 10 digits")
@@ -50,12 +55,14 @@ public class StudentRequest {
 
     @NotNull(message = "Class ID is required")
     private Long classId;
-    private String admissionNumber;
-    private String academicYear;
 
     @NotNull(message = "Section ID is required")
     private Long sectionId;
 
+    @NotNull(message = "Teacher ID is required")
+    private Long teacherId;
+
     @NotNull(message = "Fee ID is required")
     private Long feeId;
+
 }

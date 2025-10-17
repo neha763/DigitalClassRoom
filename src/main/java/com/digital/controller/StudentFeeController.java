@@ -78,6 +78,12 @@ public class StudentFeeController {
         paymentService.deletePayment(id);
         return ResponseEntity.noContent().build();
     }
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @GetMapping("/invoices/all")
+    public ResponseEntity<List<InvoiceDTO>> getAllInvoices() {
+        return ResponseEntity.ok(invoiceService.getAllInvoices());
+    }
+
 
     // ===================== RECEIPT DOWNLOAD =====================
     @PreAuthorize("hasRole('STUDENT')")

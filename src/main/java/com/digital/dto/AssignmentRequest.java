@@ -94,4 +94,3 @@ public class AssignmentRequest {
         this.fileUrl = fileUrl;
     }
 }
-

@@ -57,32 +57,32 @@ public class AssignmentSubmissionServiceImpl implements AssignmentSubmissionServ
         // Convert file
         Blob fileBlob = convertMultipartToBlob(file);
 
-        // Build submission with default feedback & marks
+        // Build submission
         AssignmentSubmission submission = AssignmentSubmission.builder()
                 .assignment(assignment)
                 .studentId(studentId)
                 .fileUrl(fileBlob)
                 .submittedAt(LocalDateTime.now())
                 .status(SubmissionStatus.SUBMITTED)
-                .marks(0.0)  // Default mark
-                .feedback("Pending review")  // Default feedback
+                .marks(0.0)
+                .feedback("Pending review")
                 .build();
 
         AssignmentSubmission saved = submissionRepository.save(submission);
 
         // Map to response
-        SubmissionResponse resp = SubmissionResponse.builder()
+        SubmissionStatus status = saved.getStatus() != null ? saved.getStatus() : SubmissionStatus.PENDING;
+
+        return SubmissionResponse.builder()
                 .submissionId(saved.getSubmissionId())
                 .assignmentId(saved.getAssignment().getAssignmentId())
                 .studentId(saved.getStudentId())
                 .fileUrl(saved.getFileUrl().getBytes(1, (int) saved.getFileUrl().length()))
                 .submittedAt(saved.getSubmittedAt())
-                .status(saved.getStatus())
+                .assignmentStatus(status)
                 .marks(saved.getMarks())
                 .feedback(saved.getFeedback())
                 .build();
-
-        return resp;
     }
 
     @Override
@@ -90,68 +90,88 @@ public class AssignmentSubmissionServiceImpl implements AssignmentSubmissionServ
         AssignmentSubmission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Submission not found with ID: " + submissionId));
 
-        SubmissionResponse resp = SubmissionResponse.builder()
+        SubmissionStatus status = submission.getStatus() != null ? submission.getStatus() : SubmissionStatus.PENDING;
+
+        return SubmissionResponse.builder()
                 .submissionId(submission.getSubmissionId())
                 .assignmentId(submission.getAssignment().getAssignmentId())
                 .studentId(submission.getStudentId())
                 .fileUrl(submission.getFileUrl().getBytes(1, (int) submission.getFileUrl().length()))
                 .submittedAt(submission.getSubmittedAt())
-                .status((submission.getStatus()))
+                .assignmentStatus(status)
                 .marks(submission.getMarks())
                 .feedback(submission.getFeedback())
                 .build();
-
-        return resp;
     }
 
     @Override
-    public SubmissionResponse updateSubmissionFile(Long submissionId, MultipartFile file) throws ResourceNotFoundException, FileUploadException, Exception {
-        return null;
-    }
-
-    @Override
-    @Transactional
-    public SubmissionResponse updateFeedbackAndMarks(Long submissionId, String feedback, Double marks) throws ResourceNotFoundException, Exception {
-        // 1. Load the existing submission (managed entity)
-        AssignmentSubmission existing = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found with ID: " + submissionId));
-
-        // 2. Update only the fields you want (feedback, marks, status)
-        existing.setFeedback(feedback);
-        existing.setMarks(marks);
-        // Optionally change status
-        existing.setStatus(SubmissionStatus. SUBMITTED);
-
-        // 3. Save — since `existing` is managed, Hibernate will do an UPDATE, not INSERT
-        AssignmentSubmission updated = submissionRepository.save(existing);
-
-        // 4. Build the response DTO
-        return SubmissionResponse.builder()
-                .submissionId(updated.getSubmissionId())
-                .assignmentId(updated.getAssignment().getAssignmentId())
-                .studentId(updated.getStudentId())
-                .fileUrl(updated.getFileUrl().getBytes(1, (int) updated.getFileUrl().length()))
-                .submittedAt(updated.getSubmittedAt())
-                .status(updated.getStatus())
-                .marks(updated.getMarks())
-                .feedback(updated.getFeedback())
-                .build();
-    }
-
-   @Transactional
-   @Override
-   public SubmissionResponse updateSubmission(Long submissionId, MultipartFile file) throws SQLException {
+    public SubmissionResponse updateSubmissionFile(Long submissionId, MultipartFile file)
+            throws ResourceNotFoundException, FileUploadException, Exception {
 
         AssignmentSubmission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Submission not found with ID: " + submissionId));
 
-        // Update file
         if (file != null && !file.isEmpty()) {
             Blob fileBlob = convertMultipartToBlob(file);
             submission.setFileUrl(fileBlob);
             submission.setSubmittedAt(LocalDateTime.now());
         }
 
+        AssignmentSubmission updated = submissionRepository.save(submission);
+
+        SubmissionStatus status = updated.getStatus() != null ? updated.getStatus() : SubmissionStatus.PENDING;
+
+        return SubmissionResponse.builder()
+                .submissionId(updated.getSubmissionId())
+                .assignmentId(updated.getAssignment().getAssignmentId())
+                .studentId(updated.getStudentId())
+                .fileUrl(updated.getFileUrl().getBytes(1, (int) updated.getFileUrl().length()))
+                .submittedAt(updated.getSubmittedAt())
+                .assignmentStatus(status)
+                .marks(updated.getMarks())
+                .feedback(updated.getFeedback())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public SubmissionResponse updateFeedbackAndMarks(Long submissionId, String feedback, Double marks)
+            throws ResourceNotFoundException, Exception {
+
+        AssignmentSubmission existing = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Submission not found with ID: " + submissionId));
+
+        existing.setFeedback(feedback);
+        existing.setMarks(marks);
+        existing.setStatus(SubmissionStatus.SUBMITTED);
+
+        AssignmentSubmission updated = submissionRepository.save(existing);
+
+        SubmissionStatus status = updated.getStatus() != null ? updated.getStatus() : SubmissionStatus.PENDING;
+
+        return SubmissionResponse.builder()
+                .submissionId(updated.getSubmissionId())
+                .assignmentId(updated.getAssignment().getAssignmentId())
+                .studentId(updated.getStudentId())
+                .fileUrl(updated.getFileUrl().getBytes(1, (int) updated.getFileUrl().length()))
+                .submittedAt(updated.getSubmittedAt())
+                .assignmentStatus(status)
+                .marks(updated.getMarks())
+                .feedback(updated.getFeedback())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public SubmissionResponse updateSubmission(Long submissionId, MultipartFile file) throws SQLException {
+        AssignmentSubmission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Submission not found with ID: " + submissionId));
+
+        if (file != null && !file.isEmpty()) {
+            Blob fileBlob = convertMultipartToBlob(file);
+            submission.setFileUrl(fileBlob);
+            submission.setSubmittedAt(LocalDateTime.now());
+        }
 
         submission.setStatus(SubmissionStatus.SUBMITTED);
         submission.setMarks(0.0);
@@ -159,19 +179,20 @@ public class AssignmentSubmissionServiceImpl implements AssignmentSubmissionServ
 
         AssignmentSubmission updated = submissionRepository.save(submission);
 
-        SubmissionResponse resp = SubmissionResponse.builder()
+        SubmissionStatus status = updated.getStatus() != null ? updated.getStatus() : SubmissionStatus.PENDING;
+
+        return SubmissionResponse.builder()
                 .submissionId(updated.getSubmissionId())
                 .assignmentId(updated.getAssignment().getAssignmentId())
                 .studentId(updated.getStudentId())
                 .fileUrl(updated.getFileUrl().getBytes(1, (int) updated.getFileUrl().length()))
                 .submittedAt(updated.getSubmittedAt())
-                .status(updated.getStatus())
+                .assignmentStatus(status)  // DTO field
                 .marks(updated.getMarks())
                 .feedback(updated.getFeedback())
                 .build();
-
-        return resp;
     }
+
 
     @Override
     @Transactional
@@ -180,5 +201,4 @@ public class AssignmentSubmissionServiceImpl implements AssignmentSubmissionServ
                 .orElseThrow(() -> new ResourceNotFoundException("Submission not found with ID: " + submissionId));
         submissionRepository.delete(submission);
     }
-
 }

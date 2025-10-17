@@ -30,6 +30,7 @@ public class ReportCardServiceImpl implements ReportCardService {
     private final SessionRepository sessionRepository;
 
 
+
     @Override
     public List<ReportCard> generateReportCards(Long classId, Long sectionId, Long subjectId, String term, List<Long> examIds) {
 
@@ -52,7 +53,7 @@ public class ReportCardServiceImpl implements ReportCardService {
             for (Long examId : examIds) {
 
                 // Fetch Result for this student + exam
-                Result result = resultRepository.findByStudentIdAndExamId(student.getUser().getUserId(), examId)
+                Result result = resultRepository.findByStudent_StudentRegIdAndExam_ExamId(student.getUser().getUserId(), examId)
                         .orElseThrow(() -> new EntityNotFoundException(
                                 "Result not found for student " + student.getUser().getUserId() + " and exam " + examId));
 

@@ -25,4 +25,10 @@ public class Notification {
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private Parent parent;
+
+    @Column(nullable = false)
+    private boolean seen = false;
 }

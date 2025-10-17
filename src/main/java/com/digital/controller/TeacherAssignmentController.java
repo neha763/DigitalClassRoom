@@ -81,7 +81,6 @@ public class TeacherAssignmentController {
                     .body("Internal error: " + ex.getMessage());
         }
     }
-
     @PreAuthorize("hasRole('TEACHER')")
     @PutMapping(path = "/{assignmentId}", consumes = {"multipart/form-data"})
     public ResponseEntity<?> updateAssignment(

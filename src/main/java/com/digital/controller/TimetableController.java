@@ -24,7 +24,6 @@ public class TimetableController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = "application/json", produces = "text/plain")
     public ResponseEntity<String> createTimetable(@Valid @RequestBody TimetableRequest timetableRequest){
-        System.out.println("In timetable controller");
         return new ResponseEntity<>(timetableService.createTimetable(timetableRequest), HttpStatus.CREATED);
     }
 
@@ -34,15 +33,18 @@ public class TimetableController {
         return new ResponseEntity<>(timetableService.updateTimetable(timetableId, request), HttpStatus.OK);
     }
 
+
+    // Here we are returning List<Timetable> but because of frontend we have changed the return type to List<TimetableResponse>
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(produces = "application/json")
     public ResponseEntity<List<Timetable>> getTimetables(){
-        return new ResponseEntity<>(timetableService.getTimetables(), HttpStatus.OK);
+        return new ResponseEntity<List<Timetable>>(timetableService.getTimetables(), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{timetableId}")
     public ResponseEntity<String> deleteTimetable(@PathVariable Long timetableId){
-        return new ResponseEntity<>(timetableService.deleteTimetable(timetableId), HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(timetableService.deleteTimetable(timetableId), HttpStatus.OK);
     }
 }

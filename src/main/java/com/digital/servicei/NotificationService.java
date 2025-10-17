@@ -9,5 +9,8 @@ public interface NotificationService {
     List<NotificationDto> getMyNotifications();
     void sendNotification(Long teacherId, EventType reservationAvailable, String message);
     void markAsRead(Long id);
+    // Parent notifications
+    List<NotificationDto> getParentNotifications(Long parentId);
+    void sendParentNotification(Long parentId, String message, String type);
 }
 

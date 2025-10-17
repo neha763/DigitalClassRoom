@@ -16,6 +16,7 @@ import javax.sql.rowset.serial.SerialBlob;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Autowired
     private AssignmentRepository assignmentRepository;
+
 
     @Override
     public AssignmentResponse createAssignment(AssignmentRequest request, Long teacherId) throws Exception {
@@ -43,7 +45,6 @@ public class AssignmentServiceImpl implements AssignmentService {
         Assignment saved = assignmentRepository.save(assignment);
         return mapToResponse(saved);
     }
-
     @Override
     public AssignmentResponse getAssignmentById(Long assignmentId) throws ResourceNotFoundException, SQLException {
         Assignment assignment = assignmentRepository.findById(assignmentId)
@@ -153,9 +154,9 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (assignment.getFileUrl() != null) {
             Blob blob = assignment.getFileUrl();
             byte[] bytes = blob.getBytes(1, (int) blob.length());
-            resp.setFileName(bytes);
+            String base64 = Base64.getEncoder().encodeToString(bytes);
+            resp.setFileName(base64); // now fileName holds Base64 string of file content
         }
-
         return resp;
     }
 }

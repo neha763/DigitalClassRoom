@@ -57,6 +57,8 @@ public class StudentServiceImpl implements StudentService {
                 .schoolClass(schoolClass)
                 .section(section)
                 .feeStructure(fee)
+                .academicYear(request.getAcademicYear())
+                .admissionNumber(request.getAdmissionNumber())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();

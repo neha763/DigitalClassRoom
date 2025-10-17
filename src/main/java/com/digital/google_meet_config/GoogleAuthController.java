@@ -4,13 +4,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/auth")
 public class GoogleAuthController {
@@ -42,4 +40,21 @@ public class GoogleAuthController {
                 + "&state=" + id;
         response.sendRedirect(url);
     }
+
+//    @PreAuthorize("hasRole('TEACHER')")
+//    @GetMapping("/google")
+//    public void googleLogin(HttpServletResponse response) throws IOException {
+//
+//        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+//
+//        String url = authUrl
+//                + "?client_id=" + clientId
+//                + "&redirect_uri=" + redirectUri
+//                + "&response_type=code"
+//                + "&scope=https://www.googleapis.com/auth/calendar.events"
+//                + "&access_type=offline"
+//                + "&prompt=consent"
+//                + "&state=" + username;
+//        response.sendRedirect(url);
+//    }
 }

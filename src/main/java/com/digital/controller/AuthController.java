@@ -61,6 +61,9 @@ public class AuthController {
                     .findFirst()
                     .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
+            // Always include role in response (remove "ROLE_" prefix)
+            String roleValue = role.replace("ROLE_", "");
+
             if(!role.equals("ROLE_ADMIN")){
                 User user = userServiceI.findUserByUsername(username);
 
@@ -68,12 +71,9 @@ public class AuthController {
 
                 user.setLastLogin(LocalDateTime.now());
                 userServiceI.updateUser(user);
+            }
 
-                response.put("id", user.getUserId().toString());
-            }
-            if(role.equals("ROLE_ADMIN")){
-                response.put("role", "ADMIN");
-            }
+            response.put("role", roleValue);
 
             String token = jwtService.generateToken(username, role);
 

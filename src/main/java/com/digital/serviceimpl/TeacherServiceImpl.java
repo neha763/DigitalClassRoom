@@ -43,9 +43,8 @@ public class TeacherServiceImpl implements TeacherService {
                 .experienceYears(teacher.getExperienceYears())
                 .gender(teacher.getGender())
                 .dateOfBirth(teacher.getDateOfBirth())
-                .classTeacher(teacher.getClassTeacher())
-
-                .isClassTeacher(teacher.isClassTeacher())
+                .classTeacherId(teacher.getClassTeacher().getClassTeacherId())
+                .assignedAsClassTeacher(teacher.isAssignedAsClassTeacher())
                 .classIds(teacher.getAssignedClass() != null
                         ? teacher.getAssignedClass().stream().map(SchoolClass::getClassId).toList()
                         : List.of())
@@ -276,7 +275,7 @@ public class TeacherServiceImpl implements TeacherService {
                 .gender(request.getGender())
                 .dateOfBirth(request.getDateOfBirth())
                 .user(user)
-                .isClassTeacher(request.isClassTeacher())
+                .assignedAsClassTeacher(request.isAssignedAsClassTeacher())
                 .classTeacher(build)
                 .assignedAt(LocalDateTime.now())
 
@@ -305,4 +304,3 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
 }
-

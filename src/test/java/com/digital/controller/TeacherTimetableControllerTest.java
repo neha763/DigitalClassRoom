@@ -63,9 +63,9 @@ class TeacherTimetableControllerTest {
     @WithMockUser(roles = "TEACHER")
     void testGetSessionsByTeacherId() throws Exception {
         Session s1 = new Session();
-        s1.setStartTime(LocalDateTime.of(2025, 9, 25, 10, 0));
+        s1.setStartTime(LocalDateTime.now().plusDays(1));
         Session s2 = new Session();
-        s2.setStartTime(LocalDateTime.of(2025, 9, 25, 11, 0));
+        s2.setStartTime(LocalDateTime.now().plusDays(1));
         List<Session> sessions = Arrays.asList(s1, s2);
 
         when(sessionService.getTeacherSessions(1L)).thenReturn(sessions);

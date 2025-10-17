@@ -1,5 +1,7 @@
 package com.digital.servicei;
 
+import com.digital.dto.SectionRequest;
+import com.digital.dto.SectionResponse;
 import com.digital.entity.Section;
 
 import java.util.List;

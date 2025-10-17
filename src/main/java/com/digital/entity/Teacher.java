@@ -2,6 +2,7 @@ package com.digital.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -70,11 +71,14 @@ public class Teacher {
 
     @Column(name = "assigned_at")
     private LocalDateTime assignedAt;
-    private boolean isClassTeacher;
+
+    private boolean assignedAsClassTeacher;
 
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="classTeacherId")
     private ClassTeacher classTeacher;
 
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PTM> ptms;
 }
  
