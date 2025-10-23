@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -30,5 +32,7 @@ public class PaymentDTO {
     @Column(nullable = false,unique = true)
     private String transactionId;
     private String gatewayReferenceId;
+    private String  paymentDate;
+    private String paymentMethod;
     private String status;
 }
