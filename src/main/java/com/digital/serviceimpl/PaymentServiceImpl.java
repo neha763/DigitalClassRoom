@@ -200,9 +200,11 @@ public class PaymentServiceImpl implements PaymentService {
             inv.recomputeStatus();
 
             invoiceRepo.save(inv);
+
         }
 
         paymentRepo.delete(payment);
+
     }
 
     private PaymentDTO toDTO(Payment payment) {
@@ -223,6 +225,9 @@ public class PaymentServiceImpl implements PaymentService {
 
         dto.setGatewayReferenceId(payment.getGatewayReferenceId());
 
+        dto.setPaymentDate(payment.getPaymentDate().toString());
+
+        dto.setPaymentMethod(payment.getPaymentMode().name());
         dto.setStatus(payment.getStatus().name());
 
         return dto;
@@ -231,3 +236,4 @@ public class PaymentServiceImpl implements PaymentService {
 
 }
 
+ 
