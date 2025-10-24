@@ -15,4 +15,6 @@ public interface BookReservationRepository extends JpaRepository<BookReservation
     List<BookReservation> findByMember(LibraryMember member);
 
     List<BookReservation> findByBookAndStatus(Book book, BookReservation.ReservationStatus status);
+
+    boolean existsByBook(Book book);
 }

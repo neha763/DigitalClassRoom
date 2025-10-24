@@ -1,5 +1,6 @@
 package com.digital.entity;
 
+import com.digital.enums.IssueStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,11 +36,6 @@ public class BookIssue {
     @Enumerated(EnumType.STRING)
     private IssueStatus status;
 
-    public enum IssueStatus {
-        ISSUED,
-        RETURNED,
-        OVERDUE,
-        LOST
-    }
+
 }
 

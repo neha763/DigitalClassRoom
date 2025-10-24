@@ -1,5 +1,6 @@
 package com.digital.repository;
 
+import com.digital.entity.Book;
 import com.digital.entity.BookIssue;
 import com.digital.entity.LibraryMember;
 
@@ -11,9 +12,13 @@ import java.util.List;
 
 @Repository
 public interface BookIssueRepository extends JpaRepository<BookIssue, Long> {
-    List<BookIssue> findByMemberAndStatus(LibraryMember member, BookIssue.IssueStatus status);
-    List<BookIssue> findByStatus(BookIssue.IssueStatus status);
+    List<BookIssue> findByMemberAndStatus(LibraryMember member, IssueStatus status);
+    List<BookIssue> findByStatus(IssueStatus status);
+
+    List<BookIssue> findByMember(LibraryMember member);
+
+    long countByBookAndStatus(Book book, IssueStatus issueStatus);
 
 
-    List<BookIssue> findByMemberAndStatus(LibraryMember mem, IssueStatus issueStatus);
+//    List<BookIssue> findByMemberAndStatus(LibraryMember mem, IssueStatus issueStatus);
 }

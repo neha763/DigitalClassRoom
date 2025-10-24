@@ -20,4 +20,5 @@ public class IssueDTO {
     private LocalDate returnDate;
     private Double fineAmount;
     private String status;
+    private  Long fineId;
 }

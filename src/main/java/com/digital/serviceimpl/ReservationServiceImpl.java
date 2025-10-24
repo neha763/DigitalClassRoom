@@ -1,6 +1,5 @@
 package com.digital.serviceimpl;
 
-
 import com.digital.dto.ReservationDTO;
 import com.digital.entity.Book;
 import com.digital.entity.BookReservation;
@@ -33,21 +32,24 @@ public class ReservationServiceImpl implements ReservationService {
     private final NotificationService notificationService;
 
     @Override
-    @Transactional
     public ReservationDTO reserveBook(Long bookId, Long memberId) {
+        System.out.println("reserveBook called with memberId = " + memberId + ", bookId = " + bookId);
+
         Book book = bookRepo.findById(bookId)
                 .orElseThrow(() -> new NotFoundException("Book not found with id: " + bookId));
+
         LibraryMember member = memberRepo.findById(memberId)
                 .orElseThrow(() -> new NotFoundException("Member not found with id: " + memberId));
 
-        // Optionally, check if book is currently available (you may only allow reservation if no copies)
+        // Only allow reservation if book is fully unavailable (no copies)
         if (book.getAvailableCopies() != null && book.getAvailableCopies() > 0) {
             throw new BusinessException("Book is available now; reserve only when unavailable");
         }
 
-        // Optionally, check if member already has active reservation for same book
+        // Check if the member already has an active reservation for this book
         List<BookReservation> existing = reservationRepo.findByMemberAndStatus(member, BookReservation.ReservationStatus.ACTIVE);
-        boolean already = existing.stream().anyMatch(r -> r.getBook().getBookId().equals(bookId));
+        boolean already = existing.stream()
+                .anyMatch(r -> r.getBook().getBookId().equals(bookId));
         if (already) {
             throw new BusinessException("You already have an active reservation for this book");
         }
@@ -58,12 +60,15 @@ public class ReservationServiceImpl implements ReservationService {
                 .reservationDate(LocalDateTime.now())
                 .status(BookReservation.ReservationStatus.ACTIVE)
                 .build();
+
         res = reservationRepo.save(res);
 
-        // Send notification that reservation is registered (or will be fulfilled later)
-        notificationService.sendNotification(member.getUserId(),
+        // Send notification
+        notificationService.sendNotification(
+                member.getUserId(),
                 EventType.RESERVATION_AVAILABLE,
-                "Your reservation is active for book: " + book.getTitle());
+                "Your reservation is active for book: " + book.getTitle()
+        );
 
         return mapToDTO(res);
     }
@@ -72,23 +77,32 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public ReservationDTO approveReservation(Long reservationId) {
         BookReservation res = reservationRepo.findById(reservationId)
-                .orElseThrow(() -> new NotFoundException("Reservation not found id: " + reservationId));
+                .orElseThrow(() -> new NotFoundException("Reservation not found with id: " + reservationId));
+
         if (res.getStatus() != BookReservation.ReservationStatus.ACTIVE) {
-            throw new BusinessException("Reservation is not active, cannot approve");
+            throw new BusinessException("Reservation is not active; cannot approve");
         }
 
-        // Issue the book via IssueService
-        // If issue fails, throw exception
-        issueService.issueBook(res.getBook().getBookId(), res.getMember().getMemberId());
+        Book book = res.getBook();
+
+        // ✅ Explicit check for available copies BEFORE issuing
+        if (book.getAvailableCopies() == null || book.getAvailableCopies() <= 0) {
+            throw new BusinessException("No available copies for book id " + book.getBookId());
+        }
+
+        // Proceed to issue the book
+        issueService.issueBook(book.getBookId(), res.getMember().getMemberId());
 
         // Mark reservation as completed
         res.setStatus(BookReservation.ReservationStatus.COMPLETED);
         reservationRepo.save(res);
 
-        // Send notification that reservation is completed / book issued
-        notificationService.sendNotification(res.getMember().getUserId(),
+        // Notify the member
+        notificationService.sendNotification(
+                res.getMember().getUserId(),
                 EventType.RESERVATION_AVAILABLE,
-                "Your reserved book has been issued: " + res.getBook().getTitle());
+                "Your reserved book has been issued: " + book.getTitle()
+        );
 
         return mapToDTO(res);
     }
@@ -97,16 +111,20 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public ReservationDTO cancelReservation(Long reservationId) {
         BookReservation res = reservationRepo.findById(reservationId)
-                .orElseThrow(() -> new NotFoundException("Reservation not found id: " + reservationId));
+                .orElseThrow(() -> new NotFoundException("Reservation not found with id: " + reservationId));
+
         if (res.getStatus() != BookReservation.ReservationStatus.ACTIVE) {
             throw new BusinessException("Only active reservations can be cancelled");
         }
+
         res.setStatus(BookReservation.ReservationStatus.CANCELLED);
         reservationRepo.save(res);
 
-        notificationService.sendNotification(res.getMember().getUserId(),
+        notificationService.sendNotification(
+                res.getMember().getUserId(),
                 EventType.RESERVATION_AVAILABLE,
-                "Your reservation was cancelled for book: " + res.getBook().getTitle());
+                "Your reservation was cancelled for book: " + res.getBook().getTitle()
+        );
 
         return mapToDTO(res);
     }
@@ -114,17 +132,23 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<ReservationDTO> listReservationsByMember(Long memberId) {
         LibraryMember member = memberRepo.findById(memberId)
-                .orElseThrow(() -> new NotFoundException("Member not found id: " + memberId));
+                .orElseThrow(() -> new NotFoundException("Member not found with id: " + memberId));
+
         List<BookReservation> list = reservationRepo.findByMemberAndStatus(member, BookReservation.ReservationStatus.ACTIVE);
-        return list.stream().map(this::mapToDTO).collect(Collectors.toList());
+        return list.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<ReservationDTO> listActiveReservationsForBook(Long bookId) {
         Book book = bookRepo.findById(bookId)
-                .orElseThrow(() -> new NotFoundException("Book not found id: " + bookId));
+                .orElseThrow(() -> new NotFoundException("Book not found with id: " + bookId));
+
         List<BookReservation> list = reservationRepo.findByBookAndStatus(book, BookReservation.ReservationStatus.ACTIVE);
-        return list.stream().map(this::mapToDTO).collect(Collectors.toList());
+        return list.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     private ReservationDTO mapToDTO(BookReservation res) {

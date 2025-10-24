@@ -1,26 +1,21 @@
-package com.digital.entity;
+package com.digital.dto;
 
 import com.digital.enums.MemberStatus;
 import com.digital.enums.MembershipType;
-import jakarta.persistence.*;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-
-@Entity
-@Table(name = "library_members")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LibraryMember {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class MemberDTO {
     private Long memberId;
-
     private Long userId;
 
     @Enumerated(EnumType.STRING)

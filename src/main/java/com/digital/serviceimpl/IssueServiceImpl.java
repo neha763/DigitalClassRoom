@@ -7,6 +7,7 @@ import com.digital.entity.BookReservation;
 import com.digital.entity.LibraryMember;
 import com.digital.entity.FineTransaction;
 import com.digital.enums.IssueStatus;
+
 import com.digital.enums.MemberStatus;
 import com.digital.enums.FineStatus;
 import com.digital.enums.EventType;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,15 +78,17 @@ public class IssueServiceImpl implements IssueService {
         }
 
         LocalDate today = LocalDate.now();
-        LocalDate due = today.plusDays(14);
+
+//        LocalDate due = today.plusDays(5);
+        LocalDate due = today.minusDays(3);
 
         BookIssue issue = BookIssue.builder()
                 .book(book)
                 .member(mem)
                 .issueDate(today)
                 .dueDate(due)
-//                .status(IssueStatus.ISSUED)
-                .status(BookIssue.IssueStatus.ISSUED)
+                .status(IssueStatus.ISSUED)
+//                .status(BookIssue.IssueStatus.ISSUED)
                 .fineAmount(0.0)
                 .build();
         issue = issueRepo.save(issue);
@@ -114,12 +118,12 @@ public class IssueServiceImpl implements IssueService {
     public IssueDTO returnBook(Long issueId) {
         BookIssue issue = issueRepo.findById(issueId)
                 .orElseThrow(() -> new NotFoundException("Issue record not found with id " + issueId));
-
-        BookIssue.IssueStatus current = issue.getStatus();
+        FineTransaction savedfinetransaction = null;
+//        BookIssue.IssueStatus current = issue.getStatus();
+        IssueStatus current = issue.getStatus();
         if (!(IssueStatus.ISSUED.equals(current) || IssueStatus.OVERDUE.equals(current))) {
             throw new BusinessException("Cannot return book for issue with status: " + current);
         }
-
         LocalDate today = LocalDate.now();
         issue.setReturnDate(today);
 
@@ -127,43 +131,55 @@ public class IssueServiceImpl implements IssueService {
             long daysLate = ChronoUnit.DAYS.between(issue.getDueDate(), today);
             double fine = daysLate * FINE_PER_DAY;
             issue.setFineAmount(fine);
-//            issue.setStatus(IssueStatus.OVERDUE);
-            issue.setStatus(BookIssue.IssueStatus.ISSUED);
+            issue.setStatus(IssueStatus.OVERDUE);
+//            issue.setStatus(BookIssue.IssueStatus.ISSUED);
+
 
             // Record fine transaction
+//            FineTransaction fineTransaction =fineRepo.findByIssue_IssueId(issueId);
+
             FineTransaction f = FineTransaction.builder()
                     .issue(issue)
                     .member(issue.getMember())
                     .fineAmount(fine)
                     .fineReason("Late return")
                     .fineStatus(FineStatus.UNPAID)
+
                     .build();
-            fineRepo.save(f);
+            savedfinetransaction = fineRepo.save(f);
 
             notificationService.sendNotification(
                     issue.getMember().getUserId(),
                     EventType.BOOK_OVERDUE,
                     "Book overdue: " + issue.getBook().getTitle() + ". Fine: ₹" + fine
             );
-        } else {
+        }  else {
             issue.setFineAmount(0.0);
-            issue.setStatus(BookIssue.IssueStatus.ISSUED);
         }
 
+        issue.setStatus(IssueStatus.ISSUED);
+//        issue.setStatus(BookIssue.IssueStatus.RETURNED);
         issue = issueRepo.save(issue);
 
-        // Update book copy count
+        // ✅ Update book copy count
         Book book = issue.getBook();
         book.setAvailableCopies((book.getAvailableCopies() == null ? 0 : book.getAvailableCopies()) + 1);
         bookRepo.save(book);
 
-        // Update member’s issued count
+        // ✅ Update member’s issued count
         LibraryMember mem = issue.getMember();
-        Integer issuedCount = mem.getTotalIssuedBooks() != null ? mem.getTotalIssuedBooks() : 0;
+        int issuedCount = mem.getTotalIssuedBooks() != null ? mem.getTotalIssuedBooks() : 0;
         mem.setTotalIssuedBooks(Math.max(0, issuedCount - 1));
         memberRepo.save(mem);
 
-        return mapToDTO(issue);
+        IssueDTO issueDTO = mapToDTO(issue);
+        if (savedfinetransaction == null) {
+            issueDTO.setFineId(null);
+        } else {
+            issueDTO.setFineId(savedfinetransaction.getFineId());
+        }
+        return issueDTO;
+
     }
 
     @Override
@@ -223,6 +239,7 @@ public class IssueServiceImpl implements IssueService {
                 .returnDate(issue.getReturnDate())
                 .fineAmount(issue.getFineAmount())
                 .status(issue.getStatus().name())
+//                .fineId(issue.getBook().)
                 .build();
     }
 }

@@ -19,5 +19,8 @@ public class FineDTO {
     private String fineReason;
     private String fineStatus;
     private LocalDate paidDate;
+    private Long paymentId;
+
+
 }
 

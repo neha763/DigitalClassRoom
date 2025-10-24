@@ -4,9 +4,12 @@ package com.digital.serviceimpl;
 import com.digital.dto.BookDTO;
 import com.digital.entity.Book;
 import com.digital.enums.BookStatus;
+import com.digital.enums.IssueStatus;
 import com.digital.exception.BusinessException;
 import com.digital.exception.NotFoundException;
+import com.digital.repository.BookIssueRepository;
 import com.digital.repository.BookRepository;
+import com.digital.repository.BookReservationRepository;
 import com.digital.servicei.BookService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +24,16 @@ import java.util.stream.Collectors;
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepo;
+    private final BookIssueRepository issueRepository;
+    private final BookReservationRepository reservationRepository;
+
 
     @Override
     @Transactional
     public BookDTO createBook(BookDTO dto) {
         if (dto.getIsbn() != null) {
             bookRepo.findByIsbn(dto.getIsbn()).ifPresent(b ->
-                { throw new BusinessException("ISBN already exists: " + dto.getIsbn()); }
+                    { throw new BusinessException("ISBN already exists: " + dto.getIsbn()); }
             );
         }
         Book book = Book.builder()
@@ -46,6 +52,7 @@ public class BookServiceImpl implements BookService {
         book = bookRepo.save(book);
         dto.setBookId(book.getBookId());
         dto.setAvailableCopies(book.getAvailableCopies());
+        dto.setAddedDate(book.getAddedDate());
         return dto;
     }
 
@@ -95,14 +102,21 @@ public class BookServiceImpl implements BookService {
     @Transactional
     public void deleteBook(Long bookId) {
         Book book = bookRepo.findById(bookId)
+
                 .orElseThrow(() -> new NotFoundException("Book not found with id " + bookId));
-        long issuedCount = 0; 
+//      issueRepository.countByBookAndStatus(book, IssueStatus.ISSUED);
+        long issuedCount = 0;
+        issuedCount=  issueRepository.countByBookAndStatus(book, IssueStatus.ISSUED);
         // you could use custom query to count active issues
         // e.g. bookIssueRepository.countByBookAndStatus(...)
         if (issuedCount > 0) {
             throw new BusinessException("Cannot delete book; it is currently issued");
         }
+        if (reservationRepository.existsByBook(book)) {
+            throw new BusinessException("Cannot delete book; it is currently reserve");
+        }
         bookRepo.delete(book);
+
     }
 
     @Override

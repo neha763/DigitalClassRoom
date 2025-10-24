@@ -1,5 +1,6 @@
 package com.digital.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ public class BookDTO {
     private Integer totalCopies;
     private Integer availableCopies;
     private String shelfNumber;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-M-d")
     private LocalDate addedDate;
     private String status;
 }
