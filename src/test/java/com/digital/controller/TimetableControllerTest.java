@@ -118,7 +118,7 @@ class TimetableControllerTest {
         when(timetableService.deleteTimetable(1L)).thenReturn("Deleted successfully");
 
         mockMvc.perform(delete("/api/admin/timetable/1"))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andExpect(content().string("Deleted successfully"));
     }
 

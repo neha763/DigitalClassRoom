@@ -1,6 +1,7 @@
 package com.digital.controller;
 
 import com.digital.dto.NotificationDto;
+import com.digital.enums.EventType;
 import com.digital.servicei.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,7 +40,7 @@ public class NotificationController {
     public ResponseEntity<?> sendNotification(@PathVariable Long teacherId,
                                               @RequestBody String message) {
         try {
-            notificationService.sendNotification(teacherId, message);
+            notificationService.sendNotification(teacherId, EventType.RESERVATION_AVAILABLE, message);
             return ResponseEntity.ok(Map.of("message", "Notification sent successfully."));
         } catch (Exception e) {
             return ResponseEntity

@@ -25,10 +25,7 @@ public class TeacherAssignmentController {
     @Autowired
     private AssignmentService assignmentService;
 
-    /**
-     * In a real app, you’d get the teacherId from the authenticated principal.
-     * Here you have a stub.
-     */
+
     private Long getTeacherId() {
         return 1L;
     }

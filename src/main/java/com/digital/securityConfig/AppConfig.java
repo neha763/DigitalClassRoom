@@ -72,7 +72,6 @@ public class AppConfig {
         logger.info("Building Security Filter Chain...");
 
         http.csrf(AbstractHttpConfigurer::disable)
-                .cors().and()
                 .authorizeHttpRequests(auth -> auth
 
                         // auth/login
@@ -190,6 +189,13 @@ public class AppConfig {
                         .requestMatchers("/teacher/student-leave/view",
                                                   "/teacher/student-leave/*/approve",
                                                   "/teacher/student-leave/*/reject").hasAnyRole("TEACHER", "ADMIN")
+
+                        //LibraryModule apis
+                        .requestMatchers("/admin/books/**").hasRole("LIBRARIAN")
+                        .requestMatchers("/library/**").hasAnyRole("STUDENT", "TEACHER","LIBRARIAN")
+                        .requestMatchers("/library").hasRole("LIBRARIAN") // POST /library to createFine
+
+                        .requestMatchers("/adminLibrarian/**").hasRole("LIBRARIAN")
 
                         // Admin Leave request apis
                         .requestMatchers("/admin/leave-requests",
