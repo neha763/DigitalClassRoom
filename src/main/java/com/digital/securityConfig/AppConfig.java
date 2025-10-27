@@ -72,6 +72,7 @@ public class AppConfig {
         logger.info("Building Security Filter Chain...");
 
         http.csrf(AbstractHttpConfigurer::disable)
+                .cors().and()
                 .authorizeHttpRequests(auth -> auth
 
                         // auth/login
