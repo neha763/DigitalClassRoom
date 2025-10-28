@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -86,6 +87,10 @@ public class AppConfig {
                         .requestMatchers("/api/auditLog").hasAnyRole("TEACHER", "STUDENT", "LIBRARIAN", "TRANSPORT")
                         .requestMatchers("/api/auditLog/*").hasRole("ADMIN")
 
+                        // teacher APIs
+                        .requestMatchers("/api/teacher/fetch-all").hasAnyRole("STUDENT", "ADMIN")
+                        .requestMatchers("/api/teacher/**").hasRole("ADMIN")
+
                         // attendance rule apis
                         .requestMatchers( "/api/attendanceRules/**").hasRole("ADMIN")
 
@@ -105,11 +110,11 @@ public class AppConfig {
                         .requestMatchers("/api/attendance/admin/pdf/*").hasAnyRole("ADMIN", "TEACHER")
 
                         //report
-                                .requestMatchers("/api/admin/exams/report-cards/generate")
-                                .hasAnyRole("ADMIN", "TEACHER")
-                                .requestMatchers("/reports/**").permitAll()   // static reports folder
-                                .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "PARENT")  // secure API
-                                .requestMatchers("/api/teacher/**").hasAnyRole("ADMIN", "TEACHER")
+                        .requestMatchers("/api/admin/exams/report-cards/generate")
+                        .hasAnyRole("ADMIN", "TEACHER")
+                        .requestMatchers("/reports/**").permitAll()   // static reports folder
+                        .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "PARENT")  // secure API
+                        .requestMatchers("/api/teacher/**").hasAnyRole("ADMIN", "TEACHER")
 
                         // subject apis
                         .requestMatchers("/api/admin/subject", "/api/admin/subject/*",
@@ -138,11 +143,12 @@ public class AppConfig {
                         // teacher assignments - TeacherAssignmentController
                         .requestMatchers("/teacher/assignments/**").hasRole("TEACHER")
 
-                        // teacher APIs
-                        .requestMatchers("/api/teacher/**").hasRole("ADMIN")
-
                         // class/section
-                        .requestMatchers("/api/class/**", "/api/section/**").hasRole("ADMIN")
+                        .requestMatchers("/api/class/fetch-all",
+                                                  "/api/section/classes/*/sections/fetch-all")
+                        .hasAnyRole("ADMIN", "TEACHER", "STUDENT")
+                        .requestMatchers("/api/class/**",
+                                                  "/api/section/**").hasRole("ADMIN")
 
                         // students
                         .requestMatchers("/api/students/admin/**").hasRole("ADMIN")
@@ -168,7 +174,7 @@ public class AppConfig {
                                                   "/admin/calendar/holidays/remove/*",
                                                   "/admin/calendar/events/*",
                                                   "/admin/calendar/events/*/view",
-                                                  "admin/calendar/events/view-all",
+                                                  "/admin/calendar/events/view-all",
                                                   "/admin/calendar/events/remove/*").hasRole("ADMIN")
 
                         // TEACHER view calendar events Api
