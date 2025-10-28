@@ -34,6 +34,7 @@ public class AdminSectionController {
 //        return ResponseEntity.ok(saved);
 //    }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/classes/{classId}/sections")
     public ResponseEntity<SectionResponse> addSection(@PathVariable Long classId,
                                                       @Valid @RequestBody SectionRequest request) {
@@ -56,6 +57,7 @@ public class AdminSectionController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/sections/{id}")
     public ResponseEntity<Section> updateSection(@PathVariable Long id,
                                                  @RequestBody SectionRequest request) {
@@ -67,13 +69,15 @@ public class AdminSectionController {
         return ResponseEntity.ok(updated);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/sections/{id}")
     public ResponseEntity<String> deleteSection(@PathVariable Long id) {
         sectionService.deleteSection(id);
         return ResponseEntity.ok("Section deleted successfully");
     }
 
-    @GetMapping("/classes/{classId}/sections")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
+    @GetMapping("/classes/{classId}/sections/fetch-all")
     public ResponseEntity<List<SectionResponse>> getSectionsByClass(@PathVariable Long classId) {
         List<SectionResponse> response = sectionService.getAllSections().stream()
                 .filter(s -> s.getSchoolClass().getClassId().equals(classId))
