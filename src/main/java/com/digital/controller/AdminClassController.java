@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/class")
 @CrossOrigin(origins = "*") // Allow requests from any domain
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminClassController {
 
     private final ClassService classService;
@@ -27,11 +26,13 @@ public class AdminClassController {
         this.classService = classService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<SchoolClass> createClass(@Valid @RequestBody SchoolClass schoolClass) {
         return ResponseEntity.ok(classService.createClass(schoolClass));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ClassResponse> updateClass(@Valid @PathVariable Long id,
                                                      @RequestBody ClassRequest request) {
@@ -43,14 +44,15 @@ public class AdminClassController {
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteClass(@PathVariable Long id) {
         classService.deleteClass(id);
         return ResponseEntity.ok("Class deleted successfully");
     }
 
-
-    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
+    @GetMapping(value = "/fetch-all")
     public ResponseEntity<List<ClassResponse>> getAllClasses() {
         List<ClassResponse> list = classService.getAllClasses().stream()
                 .map(this::toResponse)
