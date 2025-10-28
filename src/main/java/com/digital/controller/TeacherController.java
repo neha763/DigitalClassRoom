@@ -54,8 +54,8 @@ public class TeacherController {
     }
 
     // ✅ READ ALL
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/fetch-all")
+    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')")
     public ResponseEntity<?> getAllTeachers() {
         try {
             List<TeacherDto> teachers = teacherService.getAllTeachers();
