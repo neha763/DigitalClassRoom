@@ -118,6 +118,7 @@ public class SubjectServiceImpl implements SubjectService {
                 .teacherId(subject.getTeacher() != null ? subject.getTeacher().getId() : null)
                 .teacherName(subject.getTeacher() != null ? subject.getTeacher().getFirstName() : null)
                 .description(subject.getDescription())
+                .maxMarks(subject.getMaxMarks())
                 .isActive(subject.getIsActive())
                 .build();
     }

@@ -27,7 +27,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public StudentResponse createStudent(StudentRequest request) {
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getUserId()));
 
         SchoolClass schoolClass = classRepository.findById(request.getClassId())

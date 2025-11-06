@@ -4,7 +4,6 @@ import com.digital.dto.EnrollmentRequest;
 import com.digital.dto.StudentCreateResponse;
 import com.digital.dto.StudentRequest;
 import com.digital.dto.StudentResponse;
-import com.digital.entity.User;
 import com.digital.servicei.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +34,8 @@ public class AdminStudentController {
         return ResponseEntity.ok(studentService.updateStudent(id, request));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','STUDENT')")
+    @GetMapping(value = "/all")
     public ResponseEntity<List<StudentResponse>> getAllStudents() {
         return ResponseEntity.ok(studentService.getAllStudents());
     }

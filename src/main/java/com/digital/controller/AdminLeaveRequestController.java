@@ -46,7 +46,7 @@ public class AdminLeaveRequestController {
      * */
 
     @PutMapping(value = "/{leaveRequestId}/reject")
-    public ResponseEntity<LeaveRequestDto> rejectTeacherLeaveRequest(@PathVariable Long leaveRequestId, String remarks){
+    public ResponseEntity<LeaveRequestDto> rejectTeacherLeaveRequest(@PathVariable Long leaveRequestId, @RequestParam String remarks){
 
         return new ResponseEntity<LeaveRequestDto>(leaveRequestService.rejectTeacherLeaveRequest(leaveRequestId, remarks),
                 HttpStatus.OK);

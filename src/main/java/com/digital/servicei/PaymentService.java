@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PaymentService {
     PaymentDTO makePayment(PaymentDTO dto);
-    List<PaymentDTO> getPaymentsByStudent(Long studentId);
+    List<PaymentDTO> getPaymentsByStudent();
     GatewayResponseDTO processGatewayCallback(GatewayResponseDTO response);
 
     PaymentDTO updatePayment(Long paymentId, PaymentDTO dto);
