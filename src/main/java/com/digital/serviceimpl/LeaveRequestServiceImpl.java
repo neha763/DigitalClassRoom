@@ -2,7 +2,6 @@ package com.digital.serviceimpl;
 
 import com.digital.dto.LeaveRequestDto;
 import com.digital.dto.MakeLeaveRequest;
-import com.digital.dto.RejectLeaveRequest;
 import com.digital.entity.*;
 import com.digital.enums.AttendanceStatus;
 import com.digital.enums.LeaveRequestStatus;
@@ -335,7 +334,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Override
     public List<LeaveRequestDto> viewAllPendingLeaveRequests() {
 
-        List<LeaveRequest> leaveRequests = leaveRequestRepository.findAllByApprovedByAdmin_Role(Role.ADMIN);
+        List<LeaveRequest> leaveRequests = leaveRequestRepository.findAllByApprovedByAdmin_RoleAndStatus(Role.ADMIN,
+                LeaveRequestStatus.Pending);
+
 
         return leaveRequests.stream().map(this::mapToLeaveRequestDtoForTeacher).toList();
     }

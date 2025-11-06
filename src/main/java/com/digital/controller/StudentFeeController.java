@@ -10,6 +10,7 @@ import com.digital.servicei.ReceiptService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,8 +43,9 @@ public class StudentFeeController {
 
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/invoices")
-    public ResponseEntity<List<InvoiceDTO>> getInvoices(@RequestParam Long studentId) {
-        return ResponseEntity.ok(invoiceService.getInvoicesByStudent(studentId));
+    public ResponseEntity<List<InvoiceDTO>> getInvoices() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(invoiceService.getInvoicesByStudent(username));
     }
 
     @PreAuthorize("hasRole('STUDENT')")
@@ -60,8 +62,8 @@ public class StudentFeeController {
 
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/payments/history")
-    public ResponseEntity<List<PaymentDTO>> getPaymentHistory(@RequestParam Long studentId) {
-        return ResponseEntity.ok(paymentService.getPaymentsByStudent(studentId));
+    public ResponseEntity<List<PaymentDTO>> getPaymentHistory() {
+        return ResponseEntity.ok(paymentService.getPaymentsByStudent());
     }
 
     @PreAuthorize("hasRole('STUDENT')")

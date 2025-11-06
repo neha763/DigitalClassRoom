@@ -103,6 +103,6 @@ public class AdminFeeController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/payments")
     public ResponseEntity<List<PaymentDTO>> getAllPayments() {
-        return ResponseEntity.ok(paymentService.getPaymentsByStudent(null));
+        return ResponseEntity.ok(paymentService.getPaymentsByStudent());
     }
 }

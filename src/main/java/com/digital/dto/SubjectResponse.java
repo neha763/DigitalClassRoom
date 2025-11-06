@@ -3,6 +3,8 @@ package com.digital.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 public class SubjectResponse {
@@ -14,5 +16,6 @@ public class SubjectResponse {
     private Long teacherId;
     private String teacherName;
     private String description;
+    private BigDecimal maxMarks;
     private Boolean isActive;
 }

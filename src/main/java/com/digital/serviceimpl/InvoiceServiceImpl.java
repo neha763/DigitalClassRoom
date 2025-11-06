@@ -60,8 +60,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceDTO> getInvoicesByStudent(Long studentId) {
-        Student student = studentRepo.findById(studentId)
+    public List<InvoiceDTO> getInvoicesByStudent(String username) {
+        Student student = studentRepo.findByUser_Username(username)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         return invoiceRepo.findByStudent(student).stream()

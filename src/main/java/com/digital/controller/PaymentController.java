@@ -31,9 +31,9 @@ public class PaymentController {
 
 
     @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<PaymentDTO>> byStudent(@PathVariable Long studentId) {
-        List<PaymentDTO> payments = paymentService.getPaymentsByStudent(studentId);
+    @GetMapping("/student")
+    public ResponseEntity<List<PaymentDTO>> byStudent() {
+        List<PaymentDTO> payments = paymentService.getPaymentsByStudent();
         return ResponseEntity.ok(payments);
     }
 

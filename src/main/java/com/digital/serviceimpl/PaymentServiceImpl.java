@@ -22,6 +22,7 @@ import com.digital.repository.StudentRepository;
 
 import com.digital.servicei.PaymentService;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -65,11 +66,13 @@ public class PaymentServiceImpl implements PaymentService {
         Invoice inv = invoiceRepo.findById(dto.getInvoiceId())
                 .orElseThrow(() -> new RuntimeException("Invoice not found"));
 
-        Student student = studentRepo.findById(dto.getStudentId())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Student student = studentRepo.findByUserUsername(username).orElseThrow(() -> new RuntimeException("Student not found"));
+//        Student student = studentRepo.findById(dto.getStudentId())
+//                .orElseThrow(() -> new RuntimeException("Student not found"));
 
         // Ensure invoice belongs to this student
-        if (!inv.getStudent().getStudentRegId().equals(dto.getStudentId())) {
+        if (!inv.getStudent().getStudentRegId().equals(student.getStudentId())) {
             throw new RuntimeException("Invoice does not belong to this student");
         }
 
@@ -109,15 +112,16 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
 
-    public List<PaymentDTO> getPaymentsByStudent(Long studentId) {
-
+    public List<PaymentDTO> getPaymentsByStudent() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Student student = studentRepo.findByUserUsername(username).orElseThrow(() -> new RuntimeException("Student not found"));
         List<Payment> payments;
 
-        if (studentId != null) {
+        if (student.getStudentId() != null) {
 
-            Student student = studentRepo.findById(studentId)
-
-                    .orElseThrow(() -> new RuntimeException("Student not found"));
+//            Student student = studentRepo.findById(studentId)
+//
+//                    .orElseThrow(() -> new RuntimeException("Student not found"));
 
             payments = paymentRepo.findByStudent(student);
 
@@ -235,5 +239,3 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
 }
-
- 
